@@ -1,0 +1,13 @@
+version: "3"
+services:
+  gmover-game:
+    build:
+      context: .
+    working_dir: /usr/src/gmover-game
+    volumes:
+      - .:/usr/src/gmover-game
+      - /usr/src/gmover-game/node_modules
+      - /usr/src/gmover-game/.next
+    network_mode: "host"
+    environment:
+      - NODE_ENV=production
