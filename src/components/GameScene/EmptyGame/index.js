@@ -24,11 +24,19 @@ import Moon from "../Objects/Moon";
 import { useEthereum } from "@/context/EthereumContext";
 import { ethers } from "ethers";
 import Inventory from "@/components/Inventory";
+import { toast, ToastContainer } from "react-toastify";
+import { ImSpinner8 } from "react-icons/im";
 
 const AnimatedContainer = animated(Container);
 const AnimatedStage = animated(Stage);
 
-function RenderModal({ setIsModalOpen, row, col, itemType }) {
+function RenderModal({
+  updateGmoveBalance,
+  setIsModalOpen,
+  row,
+  col,
+  itemType,
+}) {
   const { userAddress, signer, contracts } = useEthereum();
   const [loading, setLoading] = useState(true);
   const [stakedNFTDetails, setStakedNFTDetails] = useState(null);
@@ -57,11 +65,6 @@ function RenderModal({ setIsModalOpen, row, col, itemType }) {
         stakedAt: new Date(parseInt(details?.stakedAt) * 1000),
         pendingReward: ethers.formatEther(details?.pendingReward),
         stakedDuration: parseInt(details.stakedDuration),
-      });
-      console.log("xxx:", {
-        stakedAt: new Date(parseInt(details?.stakedAt) * 1000),
-        pendingReward: details?.pendingReward,
-        stakedDuration: details.stakedDuration,
       });
     } catch (error) {
       console.error(
@@ -92,11 +95,6 @@ function RenderModal({ setIsModalOpen, row, col, itemType }) {
         pendingReward: ethers.formatEther(details?.pendingReward),
         stakedDuration: parseInt(details.stakedDuration),
       });
-      console.log("xxx:", {
-        stakedAt: new Date(parseInt(details?.stakedAt) * 1000),
-        pendingReward: details?.pendingReward,
-        stakedDuration: details.stakedDuration,
-      });
     } catch (error) {
       console.error(
         `Error fetching NFT details for position (${row}, ${col}):`,
@@ -120,9 +118,10 @@ function RenderModal({ setIsModalOpen, row, col, itemType }) {
   }
 
   const calculateTimeRemaining = (stakedAt) => {
+    if (!stakedAt) return null;
     const now = new Date();
     const stakingPeriod = 7 * 24 * 60 * 60 * 1000; // 7 days in milliseconds
-    const endTime = new Date(stakedAt.getTime() + stakingPeriod);
+    const endTime = new Date(stakedAt?.getTime() + stakingPeriod);
     const timeRemaining = endTime - now;
 
     if (timeRemaining <= 0) {
@@ -140,150 +139,345 @@ function RenderModal({ setIsModalOpen, row, col, itemType }) {
     return `${days}d ${hours}h ${minutes}m remaining`;
   };
 
-  const unstakeTree = async (row, col) => {
-    if (!signer || !contracts?.treeStakingContract) {
-      console.error("Signer or contract not available");
+  const unstakeItem = async (row, col, itemType) => {
+    const contractKey =
+      itemType === "tree" ? "treeStakingContract" : "tractorStakingContract";
+
+    if (!signer || !contracts?.[contractKey]) {
+      toast.error(`Signer or ${itemType} staking contract not available`, {
+        containerId: "modal-container",
+      });
       return;
     }
     setLoading(true);
+
+    const unstakePromise = new Promise(async (resolve, reject) => {
+      try {
+        const stakingContractWithSigner =
+          contracts[contractKey].connect(signer);
+        const tx = await stakingContractWithSigner.unstake(row, col);
+        await tx.wait();
+        updateGmoveBalance();
+        resolve(
+          `${
+            itemType.charAt(0).toUpperCase() + itemType.slice(1)
+          } unstaked successfully from (${row}, ${col})`
+        );
+      } catch (error) {
+        console.error(`Error unstaking ${itemType}:`, error);
+        reject(error);
+      }
+    });
+
     try {
-      const treeStakingWithSigner =
-        contracts.treeStakingContract.connect(signer);
-      const tx = await treeStakingWithSigner.unstake(row, col, {
-        gasLimit: 300000,
-      });
-      await tx.wait();
-      console.log("NFT unstaked successfully");
+      await toast.promise(
+        unstakePromise,
+        {
+          pending: {
+            render() {
+              return `Unstaking ${itemType} from (${row}, ${col})...`;
+            },
+            icon: "🔄",
+          },
+          success: {
+            render({ data }) {
+              return `${data}`;
+            },
+            icon: itemType === "tree" ? "🌳" : "🚜",
+          },
+          error: {
+            render({ data }) {
+              // Hata mesajını daha kullanıcı dostu hale getiriyoruz
+              let errorMessage = `Failed to unstake ${itemType}`;
+              if (data.reason) {
+                errorMessage += `: ${data.reason}`;
+              } else if (data.message) {
+                errorMessage += `: ${data.message}`;
+              }
+              return errorMessage;
+            },
+            icon: "❌",
+          },
+        },
+        {
+          position: "top-center",
+          autoClose: 3000,
+        }
+      );
       setStakedNFTDetails(null);
       setIsModalOpen(false);
     } catch (error) {
-      console.log("error.reason:", error.reason);
-      alert(error.reason);
-      console.error("Error unstaking NFT:", error);
+      // Error is already handled by toast, so we don't need to do anything here
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
+
+  const unstakeTree = async (row, col) => {
+    await unstakeItem(row, col, "tree");
+  };
+
   const unstakeTractor = async (row, col) => {
-    if (!signer || !contracts?.tractorStakingContract) {
-      console.error("Signer or contract not available");
-      return;
-    }
-    setLoading(true);
-    try {
-      const tractorStakingWithSigner =
-        contracts.tractorStakingContract.connect(signer);
-      const tx = await tractorStakingWithSigner.unstake(row, col, {
-        gasLimit: 300000,
-      });
-      await tx.wait();
-      console.log("NFT unstaked successfully");
-      setStakedNFTDetails(null);
-      setIsModalOpen(false);
-    } catch (error) {
-      alert(error.message);
-      console.error("Error unstaking NFT:", error);
-    }
-    setLoading(false);
+    await unstakeItem(row, col, "tractor");
   };
 
   const unstake = async ({ item, row, col }) => {
-    if (!signer || !contracts?.treeStakingContract) {
-      console.error("Signer or contract not available");
-      return;
-    }
-
     if (item === "tree") {
-      unstakeTree(row, col);
+      await unstakeTree(row, col);
     } else if (item === "tractor") {
-      unstakeTractor(row, col);
+      await unstakeTractor(row, col);
+    } else {
+      toast.error(`Unknown item type: ${item}. Cannot unstake.`, {
+        containerId: "modal-container",
+      });
     }
   };
 
-  const claimReward = async (row, col) => {
-    if (!signer || !contracts?.treeStakingContract) {
-      console.error("Signer or contract not available");
+  // const unstakeTree = async (row, col) => {
+  //   if (!signer || !contracts?.treeStakingContract) {
+  //     console.error("Signer or contract not available");
+  //     return;
+  //   }
+  //   setLoading(true);
+  //   try {
+  //     const treeStakingWithSigner =
+  //       contracts.treeStakingContract.connect(signer);
+  //     const tx = await treeStakingWithSigner.unstake(row, col, {
+  //       gasLimit: 300000,
+  //     });
+  //     await tx.wait();
+  //     console.log("NFT unstaked successfully");
+  //     setStakedNFTDetails(null);
+  //     setIsModalOpen(false);
+  //   } catch (error) {
+  //     console.log("error.reason:", error.reason);
+  //     alert(error.reason);
+  //     console.error("Error unstaking NFT:", error);
+  //   }
+  //   setLoading(false);
+  // };
+  // const unstakeTractor = async (row, col) => {
+  //   if (!signer || !contracts?.tractorStakingContract) {
+  //     console.error("Signer or contract not available");
+  //     return;
+  //   }
+  //   setLoading(true);
+  //   try {
+  //     const tractorStakingWithSigner =
+  //       contracts.tractorStakingContract.connect(signer);
+  //     const tx = await tractorStakingWithSigner.unstake(row, col, {
+  //       gasLimit: 300000,
+  //     });
+  //     await tx.wait();
+  //     console.log("NFT unstaked successfully");
+  //     setStakedNFTDetails(null);
+  //     setIsModalOpen(false);
+  //   } catch (error) {
+  //     alert(error.message);
+  //     console.error("Error unstaking NFT:", error);
+  //   }
+  //   setLoading(false);
+  // };
+
+  // const unstake = async ({ item, row, col }) => {
+  //   if (!signer || !contracts?.treeStakingContract) {
+  //     console.error("Signer or contract not available");
+  //     return;
+  //   }
+
+  //   if (item === "tree") {
+  //     unstakeTree(row, col);
+  //   } else if (item === "tractor") {
+  //     unstakeTractor(row, col);
+  //   }
+  // };
+
+  // const claimReward = async (row, col) => {
+  //   if (!signer || !contracts?.treeStakingContract) {
+  //     console.error("Signer or contract not available");
+  //     return;
+  //   }
+  //   setLoading(true);
+  //   try {
+  //     const treeStakingWithSigner =
+  //       contracts?.treeStakingContract.connect(signer);
+  //     console.log(`await treeStakingWithSigner.claimReward(${row}, ${col})`);
+  //     const tx = await treeStakingWithSigner.claimReward(row, col, {
+  //       gasLimit: 300000,
+  //     });
+  //     await tx.wait();
+  //     setIsModalOpen(false);
+  //   } catch (error) {
+  //     console.error("Error claiming reward:", error);
+  //   }
+  //   setLoading(false);
+  // };
+
+  const claimRewardForItem = async (row, col, itemType) => {
+    const contractKey =
+      itemType === "tree" ? "treeStakingContract" : "tractorStakingContract";
+
+    if (!signer || !contracts?.[contractKey]) {
+      toast.error(`Signer or ${itemType} staking contract not available`);
       return;
     }
-    setLoading(true);
+    // setLoading(true);
+
+    const claimRewardPromise = new Promise(async (resolve, reject) => {
+      try {
+        const stakingContractWithSigner =
+          contracts[contractKey].connect(signer);
+        const tx = await stakingContractWithSigner.claimReward(row, col);
+        await tx.wait();
+        updateGmoveBalance();
+        resolve(
+          `${
+            itemType.charAt(0).toUpperCase() + itemType.slice(1)
+          } reward claimed successfully for (${row}, ${col})`
+        );
+      } catch (error) {
+        console.error(`Error claiming ${itemType} reward:`, error);
+        reject(error);
+      }
+    });
+
     try {
-      const treeStakingWithSigner =
-        contracts?.treeStakingContract.connect(signer);
-      console.log(`await treeStakingWithSigner.claimReward(${row}, ${col})`);
-      const tx = await treeStakingWithSigner.claimReward(row, col, {
-        gasLimit: 300000,
-      });
-      await tx.wait();
-      setIsModalOpen(false);
+      await toast.promise(
+        claimRewardPromise,
+        {
+          pending: {
+            render() {
+              return `Claiming ${itemType} reward for (${row}, ${col})...`;
+            },
+            icon: "🔄",
+          },
+          success: {
+            render({ data }) {
+              return `${data}`;
+            },
+            icon: itemType === "tree" ? "🌳" : "🚜",
+          },
+          error: {
+            render({ data }) {
+              // Hata mesajını daha kullanıcı dostu hale getiriyoruz
+              let errorMessage = `Failed to claim ${itemType} reward`;
+              if (data.message.includes("not staked")) {
+                errorMessage = `No ${itemType} staked at this location`;
+              } else if (data.message.includes("not ready")) {
+                errorMessage = `Reward for ${itemType} not ready yet`;
+              }
+              return errorMessage;
+            },
+            icon: "❌",
+          },
+        },
+        {
+          position: "top-center",
+          autoClose: 3000,
+        }
+      );
+      // setIsModalOpen(false);
+      getNFTDetails(itemType);
     } catch (error) {
-      console.error("Error claiming reward:", error);
+      // Error is already handled by toast, so we don't need to do anything here
+    } finally {
+      // setLoading(false);
     }
-    setLoading(false);
   };
 
-  if (loading) return <div>Loading...</div>;
-  return (
-    <div className="mx-auto">
-      <div
-        className={`bg-[#cdaa6d]  p-2 rounded-lg flex items-center justify-center shadow-inner shadow-black/40`}
-      >
-        <div>
-          <img
-            src={itemType === "tree" ? "/agac.png" : "tractor.png"}
-            alt={itemType}
-            className={` w-3/4 py-4 mx-auto`}
-          />
-        </div>
+  const claimRewardTree = async (row, col) => {
+    await claimRewardForItem(row, col, "tree");
+  };
+
+  const claimRewardTractor = async (row, col) => {
+    await claimRewardForItem(row, col, "tractor");
+  };
+
+  const claimReward = async (row, col, itemType) => {
+    if (itemType === "tractor") {
+      await claimRewardTractor(row, col);
+    } else if (itemType === "tree") {
+      await claimRewardTree(row, col);
+    } else {
+      toast.error(`Unknown item type: ${itemType}. Cannot claim reward.`);
+    }
+  };
+
+  if (loading)
+    return (
+      <div className="w-full flex flex-col  h-full justify-center items-center">
+        <p className="  flex mx-auto items-center justify-center my-5  mt-10">
+          <ImSpinner8 size={30} className="animate-spin text-4xl" />
+        </p>
+        <p>Loading nft details.</p>
       </div>
-      <div className="text-center flex flex-col items-center justify-center mb-2">
-        <h3 className=" font-semibold text-lg mt-2">{itemType}</h3>
-        {/* <p className="my-2 text-sm font-semibold">APY: NA</p> */}
+    );
+  return (
+    <>
+      <div className="mx-auto">
+        <div
+          className={`bg-[#cdaa6d]  p-2 rounded-lg flex items-center justify-center shadow-inner shadow-black/40`}
+        >
+          <div>
+            <img
+              src={itemType === "tree" ? "/agac.png" : "tractor.png"}
+              alt={itemType}
+              className={` w-3/4 py-4 mx-auto`}
+            />
+          </div>
+        </div>
+        <div className="text-center flex flex-col items-center justify-center mb-2">
+          <h3 className=" font-semibold text-lg mt-2">{itemType}</h3>
+          {/* <p className="my-2 text-sm font-semibold">APY: NA</p> */}
 
-        <p>
-          <span className="font-semibold">Staked At:</span>{" "}
-          {stakedNFTDetails?.stakedAt?.toLocaleString()}
-        </p>
-        <p>
-          <span className="font-semibold">Pending Reward:</span>{" "}
-          {parseFloat(stakedNFTDetails?.pendingReward)?.toFixed(2)} GMOVE
-        </p>
+          <p>
+            <span className="font-semibold">Staked At:</span>{" "}
+            {stakedNFTDetails?.stakedAt?.toLocaleString()}
+          </p>
+          <p>
+            <span className="font-semibold">Pending Reward:</span>{" "}
+            {parseFloat(stakedNFTDetails?.pendingReward)?.toFixed(2)} GMOVE
+          </p>
 
-        {/* <p>
+          {/* <p>
           <span className="font-semibold">Staked Duration:</span>
           {Math.floor(stakedNFTDetails?.stakedDuration / (24 * 60 * 60))} days
         </p> */}
 
-        <p>
-          <span className="font-semibold">Time Remaining:</span>
-          {calculateTimeRemaining(stakedNFTDetails?.stakedAt)}
-        </p>
+          <p>
+            <span className="font-semibold">Time Remaining:</span>
+            {calculateTimeRemaining(stakedNFTDetails?.stakedAt)}
+          </p>
 
-        <div className="flex flex-row gap-2 mt-5">
-          <button
-            onClick={() => {
-              claimReward(row, col);
-              // handleRemoveItem({ itemType, row, col });
-            }}
-            className="px-7 py-2 bg-gradient-to-t from-green-700 to-green-400 hover:from-green-500 hover:to-green-800  border-b-[5px] border-green-900 rounded-2xl text-lg shadow shadow-black/60 text-white "
-          >
-            Claim GMOVE
-          </button>
+          <div className="flex flex-row gap-2 mt-5">
+            <button
+              onClick={() => {
+                claimReward(row, col, itemType);
+                // handleRemoveItem({ itemType, row, col });
+              }}
+              className="px-7 py-2 bg-gradient-to-t from-green-700 to-green-400 hover:from-green-500 hover:to-green-800  border-b-[5px] border-green-900 rounded-2xl text-lg shadow shadow-black/60 text-white "
+            >
+              Claim GMOVE
+            </button>
 
-          <button
-            onClick={() => {
-              // handleRemoveItem({ itemType, row, col });
-              unstake({ item: itemType, row, col });
-            }}
-            className="px-7 py-2 bg-gradient-to-t from-red-700 to-red-400 hover:from-red-500 hover:to-red-800  border-b-[5px] border-red-900 rounded-2xl text-lg shadow shadow-black/60 text-white "
-          >
-            UNSTAKE
-          </button>
+            <button
+              onClick={() => {
+                // handleRemoveItem({ itemType, row, col });
+                unstake({ item: itemType, row, col });
+              }}
+              className="px-7 py-2 bg-gradient-to-t from-red-700 to-red-400 hover:from-red-500 hover:to-red-800  border-b-[5px] border-red-900 rounded-2xl text-lg shadow shadow-black/60 text-white "
+            >
+              UNSTAKE
+            </button>
+          </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }
 
 const EmptyGame = ({
+  updateGmoveBalance,
   stake,
   // calculateTimeRemaining,
   // stakeLoading,
@@ -370,7 +564,7 @@ const EmptyGame = ({
       } else {
         // alert("Insufficient resources! You need to collect more resources.");
         openModalWithContent(
-          "Kurak Arazi",
+          "Arid Land",
           <div className="mx-auto flex flex-col items-center">
             <div
               className={`bg-[#cdaa6d]     p-2 rounded-lg flex items-center  justify-center shadow-inner shadow-black/40`}
@@ -378,17 +572,17 @@ const EmptyGame = ({
               <div>
                 <img
                   src={"/a.png"}
-                  alt={"Kurak Arazi"}
+                  alt={"Arid Land"}
                   className={` w-3/4 py-4 mx-auto`}
                 />
               </div>
             </div>
             <div className="text-center flex flex-col items-center justify-center mb-2">
-              <h3 className=" font-semibold text-lg mt-2">Kurak Arazi</h3>
+              <h3 className=" font-semibold text-lg mt-2">Arid Land</h3>
               <p className="my-1 text-sm font-semibold">
-                Bu alanı 1 kaynak karşılığında ekilebilir araziye
-                çevirebilirsiniz ve bu sayede alana birşeyler ekerek kazanmaya
-                başlayabilirsin.
+                Convert this area to arable land for 1 resource and in this way
+                you can plant something in the field and start earning you can
+                start.
               </p>
 
               <button
@@ -436,7 +630,7 @@ const EmptyGame = ({
         // );
 
         openModalWithContent(
-          "Ekilebilir Arazi",
+          "Arable Land",
           <div className="mx-auto flex flex-col items-center">
             <div
               className={`bg-[#cdaa6d]     p-2 rounded-lg flex items-center  justify-center shadow-inner shadow-black/40`}
@@ -444,16 +638,16 @@ const EmptyGame = ({
               <div>
                 <img
                   src={"/b.png"}
-                  alt={"Ekilebilir Arazi"}
+                  alt={"Arable Land"}
                   className={` w-3/4 py-4 mx-auto`}
                 />
               </div>
             </div>
             <div className="text-center flex flex-col items-center justify-center mb-2">
-              <h3 className=" font-semibold text-lg mt-2">Ekilebilir Arazi</h3>
+              <h3 className=" font-semibold text-lg mt-2">Arable Land</h3>
               <p className="my-1 text-sm font-semibold">
-                Bu alanı daha önce satın aldığınız itemleri ekleyebilirsiniz ve
-                bu sayede kazanç elde etmeye başlayabilirsiniz.
+                In this field you can add items that you have already purchased
+                and in this way, you can start earning.
               </p>
 
               {inventory.length > 0 ? (
@@ -502,13 +696,13 @@ const EmptyGame = ({
   };
 
   const handleItemClick = async (itemType, row, col) => {
-    console.log(itemType, row, col);
     // stakeLoading, stakedNFTDetails
     // fetchStakedNFTDetails(row, col);
 
     openModalWithContent(
       itemType === "tree" ? "Tree" : "Tractor",
       <RenderModal
+        updateGmoveBalance={updateGmoveBalance}
         setIsModalOpen={setIsModalOpen}
         itemType={itemType}
         row={row}

@@ -10,6 +10,7 @@ import ResourceContent from "../Page/ResourceContent";
 import MarketContent from "../Page/MarketContent";
 
 export default function RightMenu({
+  getInventory,
   updateGmoveBalance,
   setShowSideMenu,
   showSideMenu,
@@ -67,6 +68,7 @@ export default function RightMenu({
       case "market":
         return (
           <MarketContent
+            getInventory={getInventory}
             updateGmoveBalance={updateGmoveBalance}
             inventory={inventory}
             setInventory={setInventory}
@@ -152,7 +154,7 @@ export default function RightMenu({
             {[
               {
                 icon: PiFarm,
-                title: "Market",
+                title: "Home",
                 image: "menu-button-home.png",
                 link: "home",
               },
@@ -164,13 +166,13 @@ export default function RightMenu({
               },
               {
                 icon: PiFarm,
-                title: "Kaynak",
+                title: "Resource",
                 image: "menu-button-resources.png",
                 link: "resource",
               },
               {
                 icon: PiFarm,
-                title: "Görevler",
+                title: "Missions",
                 image: "menu-button-tasks.png",
                 link: "missions",
               },

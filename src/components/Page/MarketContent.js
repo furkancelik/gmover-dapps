@@ -7,6 +7,7 @@ import Inventory from "../Inventory";
 import { toast } from "react-toastify";
 
 const MarketContent = ({
+  getInventory,
   inventory,
   setInventory,
   openModalWithContent,
@@ -333,6 +334,7 @@ const MarketContent = ({
             await buyTractor(item);
           }
           updateGmoveBalance();
+          getInventory();
           resolve(`Successfully purchased ${item.type}`);
         } else {
           reject(new Error("Insufficient GMOVE balance"));
@@ -456,6 +458,7 @@ const MarketContent = ({
         )}
       </div>
       <Inventory
+        getInventory={getInventory}
         inventory={inventory}
         setInventory={setInventory}
         setLoading={setLoading}

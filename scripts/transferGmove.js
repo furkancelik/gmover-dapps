@@ -6,15 +6,14 @@ async function main() {
 
   const GMOVE = await hre.ethers.getContractFactory("GMOVE");
   const gmove = await GMOVE.attach(
-    "0x4586a2FA371d8cbD562947C85E90d00aF232FCBF"
+    "0xc30682F61f7b669aca86Be2a7Ff7a456a8b20Deb"
   ); // Kontratın deploy edildiği adresi girin
 
   console.log(gmove);
   const recipients = [
-    "0x3FB4C0891bb93430af6D7Fd38bf6639cf201c3Df",
-    // "0x1f7e38987f5163C90Ac848976f930158c71C4068", // İlk alıcı adresi
-    // "0x71A57f997Ee35638fd8aEe8253272Dbb3ae7e7bd", // İkinci alıcı adresi
-    // "0xacfcd6409c6fbE7DD04Fb185072e2595E9C57C73", // Üçüncü alıcı adresi
+    "0x0F66A1C3a0cCDa981CbBA405582036c0655Fe146", //Land Game => 10k*1000
+    "0x63Fc030CbbAc3bC7B4859402F8E35AB53C0d3522", //TreeStaking =>
+    "0x6a7721e83B5829D09F6eAAf02BAd080779f5E2fF", //TracktorStaking
   ];
 
   const amount = hre.ethers.parseUnits("5000000", 18); // Her cüzdana göndereceğiniz token miktarı (örneğin, 100 GMOVE)

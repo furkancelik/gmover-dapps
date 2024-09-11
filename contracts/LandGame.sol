@@ -131,7 +131,7 @@ contract LandGame is Ownable {
         require(
             block.timestamp >=
                 lastResourceClaimTime[msg.sender] + RESOURCE_CLAIM_INTERVAL,
-            "You can only claim resources once every 10 seconds."
+            "You can only claim resources once every 1 day."
         );
 
         resources[msg.sender] += RESOURCE_AMOUNT;

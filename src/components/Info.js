@@ -72,14 +72,14 @@ const Info = ({ setPlayGame, loading, claimLand, error }) => {
             <IntroTextEffect
               key="connect-wallet-title"
               className={"text-[#653d1d] font-bold"}
-              story={`Cüzdanı Bağla!`}
+              story={`Connect Wallet!`}
               speed={100}
               delay={0}
             />
             <IntroTextEffect
               key="connect-wallet-description"
               className="text-[#653d1d]"
-              story={`Gmover MOVEMENT EVM Ağında geliştirilmiş bir oyna kazan oyunudur. Oyuna başlamak için lütfen cüzdanınızı bağlayın`}
+              story={`Gmover MOVEMENT is a play and win game developed on the EVM Network. Please connect your wallet to start the game.`}
               speed={5}
               delay={500}
             />
@@ -97,17 +97,15 @@ const Info = ({ setPlayGame, loading, claimLand, error }) => {
             <IntroTextEffect
               key="home-title"
               className={"text-[#653d1d] font-bold"}
-              story={`Oyun Bitti!`}
+              story={`Game Over!`}
               speed={100}
               delay={0}
             />
             <IntroTextEffect
               key="home-description"
               className="text-[#653d1d]"
-              story={`Yıllar önce bu topraklar yaşam doluydu.
-Şimdi  Araziler kurudu, mahsuller yok oldu… 
-FarmVille’in altın günlerinden geriye yalnızca terkedilmiş bir çiftlik kaldı.
-Gmover ile her şey yeniden başlıyor.`}
+              story={`Years ago this land was full of life. Now the fields have dried up, the crops have disappeared... 
+All that's left of FarmVille's golden days is an abandoned farm. With Gmover, it all starts again.`}
               speed={5}
               delay={500}
             />
@@ -119,13 +117,13 @@ Gmover ile her şey yeniden başlıyor.`}
             <IntroTextEffect
               key="farm-title"
               className={"text-[#653d1d] font-bold"}
-              story={`Çiftlik Eviniz!`}
+              story={`Your Farmhouse!`}
             />
             <IntroTextEffect
               key="farm-description"
               delay={50 * 15}
               className="text-[#653d1d]"
-              story={`Çiftlik eviniz, çiftliğinizin merkezi ve en önemli yapılarından biridir. Bu ev, çiftlik hakkında detaylı bilgilere erişmenizi ve çiftliğinizin gelişim sürecini takip etmenizi sağlar. Ayrıca, çiftlik evinden satın alabileceğiniz yeni itemlere göz atabilir, çiftliğinizi daha verimli hale getirmek için stratejiler oluşturabilirsiniz.`}
+              story={`Your farmhouse is the center of your farm and one of the most important buildings. It gives you access to detailed information about the farm and allows you to keep track of your farm's progress. You can also browse the new items you can buy from the farmhouse and create strategies to make your farm more efficient.`}
             />
           </>
         );
@@ -135,13 +133,13 @@ Gmover ile her şey yeniden başlıyor.`}
             <IntroTextEffect
               key="resource-title"
               className={"text-[#653d1d] font-bold"}
-              story={`Kaynak Toplama`}
+              story={`Resource Collection`}
             />
             <IntroTextEffect
               key="resource-description"
               delay={50 * 15}
               className="text-[#653d1d]"
-              story={`Her gün 1 kere ücretsiz olarak kaynak toplayabilirsiniz. Bu kaynakları, çiftliğinizdeki kurak toprakları yeşil ve verimli hale getirmek için kullanabilirsiniz. Kaynak toplamak tamamen ücretsizdir ve her 24 saatte bir yeni kaynak elde edebilirsiniz.`}
+              story={`Once every day you can collect resources for free. You can use these resources to make the dry land on your farm green and fertile. Collecting resources is completely free and you can get new resources every 24 hours.`}
             />
           </>
         );
@@ -151,13 +149,13 @@ Gmover ile her şey yeniden başlıyor.`}
             <IntroTextEffect
               key="mill-title"
               className={"text-[#653d1d] font-bold"}
-              story={`Değirmen`}
+              story={`Mill`}
             />
             <IntroTextEffect
               key="mill-description"
               delay={50 * 15}
               className="text-[#653d1d]"
-              story={`Değirmende günlük görevlerle çiftliğinizi daha verimli hale getirin. Görevleri tamamladıkça puanlar kazanın ve bu puanları çiftliğinizi büyütmek için kullanın. Günlük görevler çiftliğinizin büyümesine katkı sağlar ve sizi daha üretken kılar.`}
+              story={`Make your farm more productive with daily tasks in the mill. Earn points for completing tasks and use them to expand your farm. Daily tasks help your farm grow and make you more productive.`}
             />
           </>
         );
@@ -167,13 +165,13 @@ Gmover ile her şey yeniden başlıyor.`}
             <IntroTextEffect
               key="dry-land-title"
               className={"text-[#653d1d] font-bold"}
-              story={`Kurak Arazi`}
+              story={`Arid Land`}
             />
             <IntroTextEffect
               key="dry-land-description"
               delay={50 * 15}
               className="text-[#653d1d]"
-              story={`Çiftliğinizdeki kurak araziler, eski ihtişamını kaybetmiş ve ekim yapılamayan topraklardır. Ancak, kaynak toplayarak bu toprakları yeniden canlandırabilirsiniz. Günde bir kere kaynak toplamak ücretsizdir ve topladığınız kaynaklar sayesinde bu arazileri yeşil ve verimli hale getirebilirsiniz.`}
+              story={`The dry lands on your farm have lost their former glory and cannot be cultivated. However, you can revitalize them by collecting resources. Collecting resources once a day is free, and you can use them to make the land green and fertile.`}
             />
           </>
         );
@@ -183,13 +181,13 @@ Gmover ile her şey yeniden başlıyor.`}
             <IntroTextEffect
               key="grass-land-title"
               className={"text-[#653d1d] font-bold"}
-              story={`Ekilebilir (Verimli) Arazi`}
+              story={`Arable (Productive) Land`}
             />
             <IntroTextEffect
               key="grass-land-description"
               delay={50 * 15}
               className="text-[#653d1d]"
-              story={`Ekilebilir araziler, mahsul ekmeye ve çiftliğinizi geliştirmeye hazır alanlardır. Kurak arazileri kaynaklarınızla canlandırdıktan sonra bu alanlara ürün ekebilir ve verimli hale getirebilirsiniz. Ekilebilir araziler, çiftliğinizin büyümesinde önemli bir rol oynar.`}
+              story={`Arable land is land that is ready to plant crops and develop your farm. After revitalizing drylands with your resources, you can plant crops and make them productive. Arable land plays an important role in the growth of your farm.`}
             />
           </>
         );
@@ -199,13 +197,13 @@ Gmover ile her şey yeniden başlıyor.`}
             <IntroTextEffect
               key="play-game-title"
               className={"text-[#653d1d] font-bold"}
-              story={`Oyuna Başlayalım`}
+              story={`Start Game`}
             />
             <IntroTextEffect
               key="play-game-description"
               delay={50 * 15}
               className="text-[#653d1d]"
-              story={`Tüm bilgileri edindiğine göre şimdi oyuna başlayabiliriz.`}
+              story={`Now that you have completed the training, we can start the game.`}
             />
           </>
         );
@@ -226,7 +224,7 @@ Gmover ile her şey yeniden başlıyor.`}
             }}
             className="mt-4 px-7 py-2 bg-gradient-to-t from-[#48b407] to-[#97e70c] active:from-[#48b407] active:to-[#97e70c] hover:from-[#a1f411] hover:to-[#3f9c07]  border-b-[5px] border-[#208200] rounded-2xl text-lg shadow shadow-black/60 text-white "
           >
-            Devam Et
+            Continue
           </button>
         );
       case SCREEN_FARM:
@@ -238,7 +236,7 @@ Gmover ile her şey yeniden başlıyor.`}
             }}
             className="mt-4 px-7 py-2 bg-gradient-to-t from-[#48b407] to-[#97e70c] active:from-[#48b407] active:to-[#97e70c] hover:from-[#a1f411] hover:to-[#3f9c07]  border-b-[5px] border-[#208200] rounded-2xl text-lg shadow shadow-black/60 text-white "
           >
-            Devam Et
+            Continue
           </button>
         );
       case SCREEN_RESOURCE:
@@ -250,7 +248,7 @@ Gmover ile her şey yeniden başlıyor.`}
             }}
             className="mt-4 px-7 py-2 bg-gradient-to-t from-[#48b407] to-[#97e70c] active:from-[#48b407] active:to-[#97e70c] hover:from-[#a1f411] hover:to-[#3f9c07]  border-b-[5px] border-[#208200] rounded-2xl text-lg shadow shadow-black/60 text-white "
           >
-            Devam Et
+            Continue
           </button>
         );
       case SCREEN_MILL:
@@ -262,7 +260,7 @@ Gmover ile her şey yeniden başlıyor.`}
             }}
             className="mt-4 px-7 py-2 bg-gradient-to-t from-[#48b407] to-[#97e70c] active:from-[#48b407] active:to-[#97e70c] hover:from-[#a1f411] hover:to-[#3f9c07]  border-b-[5px] border-[#208200] rounded-2xl text-lg shadow shadow-black/60 text-white "
           >
-            Devam Et
+            Continue
           </button>
         );
       case SCREEN_DRY_LAND:
@@ -274,7 +272,7 @@ Gmover ile her şey yeniden başlıyor.`}
             }}
             className="mt-4 px-7 py-2 bg-gradient-to-t from-[#48b407] to-[#97e70c] active:from-[#48b407] active:to-[#97e70c] hover:from-[#a1f411] hover:to-[#3f9c07]  border-b-[5px] border-[#208200] rounded-2xl text-lg shadow shadow-black/60 text-white "
           >
-            Devam Et
+            Continue
           </button>
         );
       case SCREEN_GRASS_LAND:
@@ -286,7 +284,7 @@ Gmover ile her şey yeniden başlıyor.`}
             }}
             className="mt-4 px-7 py-2 bg-gradient-to-t from-[#48b407] to-[#97e70c] active:from-[#48b407] active:to-[#97e70c] hover:from-[#a1f411] hover:to-[#3f9c07]  border-b-[5px] border-[#208200] rounded-2xl text-lg shadow shadow-black/60 text-white "
           >
-            Devam Et
+            Continue
           </button>
         );
       case SCREEN_PLAY_GAME:
@@ -309,7 +307,7 @@ Gmover ile her şey yeniden başlıyor.`}
                   buttonLoading ? "opacity-50" : ""
                 } mt-4 px-7 py-2 bg-gradient-to-t from-[#48b407] to-[#97e70c] active:from-[#48b407] active:to-[#97e70c] hover:from-[#a1f411] hover:to-[#3f9c07]  border-b-[5px] border-[#208200] rounded-2xl text-lg shadow shadow-black/60 text-white`}
               >
-                {buttonLoading ? "Yükleniyor.." : "Oyuna Başla"}
+                {buttonLoading ? "Loading.." : "Start Game"}
               </button>
             )}
 

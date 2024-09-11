@@ -2,10 +2,7 @@ import useRemainingTime from "@/utils/remainingTime";
 import { useEffect, useState } from "react";
 
 const ClaimTimer = ({ time, claimComponent, ParentComponent }) => {
-  console.log("TIME:", time);
   const remainingTime = useRemainingTime(time);
-
-  console.log("remainingTime:", remainingTime);
 
   const [displayTime, setDisplayTime] = useState({
     hours: 0,

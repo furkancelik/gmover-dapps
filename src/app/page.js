@@ -153,9 +153,53 @@ const Page = () => {
     }
   }
 
+  const getInventory = async () => {
+    if (
+      !signer ||
+      !contracts?.treeNftContract ||
+      !contracts?.tractorNftContract
+    ) {
+      console.error("Signer or contracts are not available.");
+      return;
+    }
+    const treeNftWithSigner = contracts?.treeNftContract.connect(signer);
+    const tractorNftWithSigner = contracts?.tractorNftContract.connect(signer);
+
+    try {
+      const treeBalance = await treeNftWithSigner.balanceOf(userAddress, 0);
+      const tractorBalance = await tractorNftWithSigner.balanceOf(
+        userAddress,
+        1
+      );
+
+      const inventoryItems = [];
+
+      if (treeBalance > 0) {
+        inventoryItems.push({
+          title: "tree",
+          image: "/agac.png",
+          quantity: treeBalance.toString(),
+        });
+      }
+
+      if (tractorBalance > 0) {
+        inventoryItems.push({
+          title: "tractor",
+          image: "/tractor.png",
+          quantity: tractorBalance.toString(),
+        });
+      }
+
+      setInventory(inventoryItems);
+    } catch (error) {
+      console.error("Error fetching inventory:", error);
+    }
+  };
+
   useEffect(() => {
     onLoadGame();
     getBalanceGMOVE();
+    getInventory();
   }, [userAddress, contracts?.landGameContract, signer]);
 
   const [showSideMenu, setShowSideMenu] = useState(false);
@@ -189,7 +233,6 @@ const Page = () => {
     contracts?.landGameContract,
     (user, amount) => {
       if (user.toLowerCase() === userAddress.toLowerCase()) {
-        console.log("!ResourceClaimedKaynak", parseInt(amount.toString()));
         setKaynak(parseInt(amount.toString()));
         getLastClaimTime();
         setClaimLoading(false);
@@ -202,7 +245,6 @@ const Page = () => {
     contracts?.landGameContract,
     (user, amount) => {
       if (user.toLowerCase() === userAddress.toLowerCase()) {
-        console.log("!ResourceSpent", parseInt(amount.toString()));
         setKaynak(parseInt(amount.toString()));
         getLastClaimTime();
         setClaimLoading(false);
@@ -232,9 +274,7 @@ const Page = () => {
     "ResourceClaimed",
     contracts?.landGameContract,
     (user, amount) => {
-      console.log("ResourceClaimed::");
       if (user.toLowerCase() === userAddress.toLowerCase()) {
-        console.log("!ResourceClaimedKaynak", parseInt(amount.toString()));
         setKaynak(parseInt(amount.toString()));
         getLastClaimTime();
         setClaimLoading(false);
@@ -242,24 +282,136 @@ const Page = () => {
     }
   );
 
+  // const checkAndApproveForStaking = async (
+  //   nftWithSigner,
+  //   treeStakingAddress
+  // ) => {
+  //   const treeNftWithSigner = contracts.treeNftContract.connect(signer);
+  //   const isApproved = await nftWithSigner.isApprovedForAll(
+  //     userAddress,
+  //     treeStakingAddress
+  //     // contracts.treeStakingContract.target
+  //   );
+
+  //   if (!isApproved) {
+  //     const approveTx = await nftWithSigner.setApprovalForAll(
+  //       treeStakingAddress,
+  //       true
+  //     );
+  //     await approveTx.wait();
+  //     console.log("Approval granted for staking");
+  //   }
+  // };
+
+  // const stakeTree = async (row, col) => {
+  //   if (
+  //     !signer ||
+  //     !contracts?.treeStakingContract ||
+  //     !contracts?.treeNftContract
+  //   ) {
+  //     console.error("Signer or contracts not available");
+  //     return;
+  //   }
+  //   setLoading(true);
+  //   try {
+  //     const treeNftWithSigner = contracts.treeNftContract.connect(signer);
+  //     const treeStakingAddress = contracts.treeStakingContract.target;
+  //     await checkAndApproveForStaking(treeNftWithSigner, treeStakingAddress);
+
+  //     const treeStakingWithSigner =
+  //       contracts.treeStakingContract.connect(signer);
+
+  //     // Stake işlemini gerçekleştir
+  //     const stakeTx = await treeStakingWithSigner.stake(row, col);
+  //     await stakeTx.wait();
+
+  //     console.log("NFT staked successfully");
+  //     // fetchStakedNFTDetails();
+  //   } catch (error) {
+  //     console.error("Error staking NFT:", error);
+  //   }
+  //   setLoading(false);
+  // };
+
+  // const stakeTractor = async (row, col) => {
+  //   if (
+  //     !signer ||
+  //     !contracts?.tractorStakingContract ||
+  //     !contracts?.tractorNftContract
+  //   ) {
+  //     console.error("Signer or contracts not available");
+  //     return;
+  //   }
+  //   setLoading(true);
+
+  //   try {
+  //     const tractorNftWithSigner = contracts.tractorNftContract.connect(signer);
+  //     const tractorStakingAddress = contracts.tractorStakingContract.target;
+  //     await checkAndApproveForStaking(
+  //       tractorNftWithSigner,
+  //       tractorStakingAddress
+  //     );
+
+  //     const tractorStakingWithSigner =
+  //       contracts.tractorStakingContract.connect(signer);
+
+  //     // Stake işlemini gerçekleştir
+  //     const stakeTx = await tractorStakingWithSigner.stake(row, col);
+  //     await stakeTx.wait();
+
+  //     console.log("NFT staked successfully");
+  //     // fetchStakedNFTDetails();
+  //   } catch (error) {
+  //     console.error("!!Error staking NFT:", error);
+  //   }
+  //   setLoading(false);
+  // };
+
+  // const stake = async ({ item, row, col }) => {
+  //   if (item.title === "tree") {
+  //     await stakeTree(row, col);
+  //   } else if (item.title === "tractor") {
+  //     await stakeTractor(row, col);
+  //   } else {
+  //     alert("Unknown item type. Cannot stake.");
+  //   }
+  // };
+
   const checkAndApproveForStaking = async (
     nftWithSigner,
     treeStakingAddress
   ) => {
-    const treeNftWithSigner = contracts.treeNftContract.connect(signer);
     const isApproved = await nftWithSigner.isApprovedForAll(
       userAddress,
       treeStakingAddress
-      // contracts.treeStakingContract.target
     );
 
     if (!isApproved) {
-      const approveTx = await nftWithSigner.setApprovalForAll(
-        treeStakingAddress,
-        true
+      const approvePromise = new Promise(async (resolve, reject) => {
+        try {
+          const approveTx = await nftWithSigner.setApprovalForAll(
+            treeStakingAddress,
+            true
+          );
+          await approveTx.wait();
+          resolve("Approval granted for staking");
+        } catch (error) {
+          reject(error);
+        }
+      });
+
+      await toast.promise(
+        approvePromise,
+        {
+          pending: "Approving NFT for staking...",
+          success: "NFT approved for staking!",
+          error: "Failed to approve NFT for staking",
+        },
+        {
+          position: "top-center",
+          autoClose: 5000,
+        }
       );
-      await approveTx.wait();
-      console.log("Approval granted for staking");
     }
   };
 
@@ -269,28 +421,57 @@ const Page = () => {
       !contracts?.treeStakingContract ||
       !contracts?.treeNftContract
     ) {
-      console.error("Signer or contracts not available");
+      toast.error("Signer or contracts not available");
       return;
     }
     setLoading(true);
+
+    const stakePromise = new Promise(async (resolve, reject) => {
+      try {
+        const treeNftWithSigner = contracts.treeNftContract.connect(signer);
+        const treeStakingAddress = contracts.treeStakingContract.target;
+        await checkAndApproveForStaking(treeNftWithSigner, treeStakingAddress);
+
+        const treeStakingWithSigner =
+          contracts.treeStakingContract.connect(signer);
+
+        // Stake işlemini gerçekleştir
+        const stakeTx = await treeStakingWithSigner.stake(row, col);
+        await stakeTx.wait();
+        onLoadGame();
+        resolve(`Tree NFT staked successfully at (${row}, ${col})`);
+      } catch (error) {
+        reject(error);
+      }
+    });
+
     try {
-      const treeNftWithSigner = contracts.treeNftContract.connect(signer);
-      const treeStakingAddress = contracts.treeStakingContract.target;
-      await checkAndApproveForStaking(treeNftWithSigner, treeStakingAddress);
-
-      const treeStakingWithSigner =
-        contracts.treeStakingContract.connect(signer);
-
-      // Stake işlemini gerçekleştir
-      const stakeTx = await treeStakingWithSigner.stake(row, col);
-      await stakeTx.wait();
-
-      console.log("NFT staked successfully");
+      await toast.promise(
+        stakePromise,
+        {
+          pending: "Staking Tree NFT...",
+          success: {
+            render({ data }) {
+              return `${data}`;
+            },
+          },
+          error: {
+            render({ data }) {
+              return `Failed to stake Tree NFT: ${data.message}`;
+            },
+          },
+        },
+        {
+          position: "top-center",
+          autoClose: 5000,
+        }
+      );
       // fetchStakedNFTDetails();
     } catch (error) {
-      console.error("Error staking NFT:", error);
+      console.error("Error staking Tree NFT:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const stakeTractor = async (row, col) => {
@@ -299,32 +480,61 @@ const Page = () => {
       !contracts?.tractorStakingContract ||
       !contracts?.tractorNftContract
     ) {
-      console.error("Signer or contracts not available");
+      toast.error("Signer or contracts not available");
       return;
     }
     setLoading(true);
 
+    const stakePromise = new Promise(async (resolve, reject) => {
+      try {
+        const tractorNftWithSigner =
+          contracts.tractorNftContract.connect(signer);
+        const tractorStakingAddress = contracts.tractorStakingContract.target;
+        await checkAndApproveForStaking(
+          tractorNftWithSigner,
+          tractorStakingAddress
+        );
+
+        const tractorStakingWithSigner =
+          contracts.tractorStakingContract.connect(signer);
+
+        // Stake işlemini gerçekleştir
+        const stakeTx = await tractorStakingWithSigner.stake(row, col);
+        await stakeTx.wait();
+        onLoadGame();
+        resolve(`Tractor NFT staked successfully at (${row}, ${col})`);
+      } catch (error) {
+        reject(error);
+      }
+    });
+
     try {
-      const tractorNftWithSigner = contracts.tractorNftContract.connect(signer);
-      const tractorStakingAddress = contracts.tractorStakingContract.target;
-      await checkAndApproveForStaking(
-        tractorNftWithSigner,
-        tractorStakingAddress
+      await toast.promise(
+        stakePromise,
+        {
+          pending: "Staking Tractor NFT...",
+          success: {
+            render({ data }) {
+              return `${data}`;
+            },
+          },
+          error: {
+            render({ data }) {
+              return `Failed to stake Tractor NFT: ${data.message}`;
+            },
+          },
+        },
+        {
+          position: "top-center",
+          autoClose: 5000,
+        }
       );
-
-      const tractorStakingWithSigner =
-        contracts.tractorStakingContract.connect(signer);
-
-      // Stake işlemini gerçekleştir
-      const stakeTx = await tractorStakingWithSigner.stake(row, col);
-      await stakeTx.wait();
-
-      console.log("NFT staked successfully");
       // fetchStakedNFTDetails();
     } catch (error) {
-      console.error("!!Error staking NFT:", error);
+      console.error("Error staking Tractor NFT:", error);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const stake = async ({ item, row, col }) => {
@@ -333,32 +543,95 @@ const Page = () => {
     } else if (item.title === "tractor") {
       await stakeTractor(row, col);
     } else {
-      alert("Unknown item type. Cannot stake.");
+      toast.error("Unknown item type. Cannot stake.");
     }
   };
 
+  // async function updateLand(row, col, newState, resourceAmount) {
+  //   if (!contracts?.landGameContract || !signer) {
+  //     console.log("Contract or signer is not available.");
+  //     return;
+  //   }
+  //   try {
+  //     setClaimLoading(true);
+  //     const contractWithSigner = contracts?.landGameContract.connect(signer);
+  //     const tx = await contractWithSigner.updateLandAndUseResources(
+  //       row,
+  //       col,
+  //       newState, // Örneğin "grass", "tree", "tractor"
+  //       resourceAmount,
+  //       { gasLimit: 300000 }
+  //     );
+
+  //     await tx.wait(); // İşlemin blok zincirinde onaylanmasını bekleyin
+  //     console.log("!!Land updated and resources used successfully!");
+  //   } catch (error) {
+  //     setClaimLoading(false);
+  //     console.error("Error updating land and using resources:", error);
+  //   }
+  // }
+
   async function updateLand(row, col, newState, resourceAmount) {
     if (!contracts?.landGameContract || !signer) {
-      console.log("Contract or signer is not available.");
+      toast.error("Contract or signer is not available.");
       return;
     }
-    try {
-      setClaimLoading(true);
-      const contractWithSigner = contracts?.landGameContract.connect(signer);
-      const tx = await contractWithSigner.updateLandAndUseResources(
-        row,
-        col,
-        newState, // Örneğin "grass", "tree", "tractor"
-        resourceAmount,
-        { gasLimit: 300000 }
-      );
 
-      await tx.wait(); // İşlemin blok zincirinde onaylanmasını bekleyin
-      console.log("!!Land updated and resources used successfully!");
-    } catch (error) {
-      setClaimLoading(false);
-      console.error("Error updating land and using resources:", error);
-    }
+    const updateLandPromise = new Promise(async (resolve, reject) => {
+      try {
+        setClaimLoading(true);
+        const contractWithSigner = contracts?.landGameContract.connect(signer);
+
+        const tx = await contractWithSigner.updateLandAndUseResources(
+          row,
+          col,
+          newState, // Örneğin "grass", "tree", "tractor"
+          resourceAmount
+        );
+
+        await tx.wait(); // İşlemin blok zincirinde onaylanmasını bekleyin
+
+        resolve(`Land at (${row},${col}) updated to ${newState} successfully!`);
+      } catch (error) {
+        console.error("Error updating land and using resources:", error);
+        reject(error);
+      } finally {
+        setClaimLoading(false);
+      }
+    });
+
+    toast.promise(
+      updateLandPromise,
+      {
+        pending: {
+          render() {
+            return `Updating land to ${newState}...`;
+          },
+          icon: "🔄",
+        },
+        success: {
+          render({ data }) {
+            return `${data}`;
+          },
+          icon: "🌳",
+        },
+        error: {
+          render({ data }) {
+            return `Failed to update land: ${data.message}`;
+          },
+          icon: "❌",
+        },
+      },
+      {
+        position: "top-center",
+        autoClose: 5000,
+      }
+    );
+
+    try {
+      await updateLandPromise;
+      onLoadGame();
+    } catch (error) {}
   }
 
   async function getResourceBalance() {
@@ -372,7 +645,7 @@ const Page = () => {
       // Kullanıcının kaynak değerini almak için resources mapping'ini çağırın
       const resourceBalance = await contractWithSigner.resources(userAddress);
       // Elde edilen kaynak değerini frontend'e set edelim
-      console.log("Resource balance:", resourceBalance);
+
       setKaynak(parseInt(resourceBalance.toString()));
     } catch (error) {
       console.error("Error fetching resource balance:", error);
@@ -391,7 +664,7 @@ const Page = () => {
       const lastClaimTime = await contractWithSigner.getLastResourceClaimTime();
 
       // Elde edilen zamanı frontend'e set edelim
-      console.log("Last resource claim time:", lastClaimTime);
+
       setLastClaimTime(parseInt(lastClaimTime.toString()));
     } catch (error) {
       console.error("Error fetching last resource claim time:", error);
@@ -408,7 +681,7 @@ const Page = () => {
     const claimPromise = new Promise(async (resolve, reject) => {
       try {
         const contractWithSigner = contracts?.landGameContract.connect(signer);
-        const tx = await contractWithSigner.claimResource({ gasLimit: 300000 });
+        const tx = await contractWithSigner.claimResource();
         await tx.wait();
         resolve("Resource claimed successfully!");
       } catch (error) {
@@ -493,6 +766,7 @@ const Page = () => {
         stake={stake}
         // fetchStakedNFTDetails={fetchStakedNFTDetails}
         // calculateTimeRemaining={calculateTimeRemaining}
+        updateGmoveBalance={getBalanceGMOVE}
         stakedNFTDetails={stakedNFTDetails}
         stakeLoading={stakeLoading}
         updateLand={updateLand}
@@ -514,6 +788,7 @@ const Page = () => {
       />
 
       <RightMenu
+        getInventory={getInventory}
         updateGmoveBalance={getBalanceGMOVE}
         setShowSideMenu={setShowSideMenu}
         showSideMenu={showSideMenu}

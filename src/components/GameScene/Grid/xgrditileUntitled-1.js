@@ -6,7 +6,6 @@ import DryTile from "../Objects/DryTile";
 import GrassTile from "../Objects/GrassTile";
 
 const GridTile = ({ tileType = "dry", row, col, onClick, interactive }) => {
-  console.log("interactive:", interactive);
   if (tileType === "dry") {
     return (
       <DryTile

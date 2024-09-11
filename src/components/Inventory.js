@@ -10,6 +10,7 @@ const Inventory = ({
   //   openModalWithContent,
   //   // handlePurchase,
   //   setIsModalOpen,
+  getInventory,
   title = null,
   inventory,
   setInventory,
@@ -58,7 +59,7 @@ const Inventory = ({
   useContractEvent(
     "TractorPurchased",
     contracts?.tractorNftContract,
-    (user) => {
+    (user, amount, totalPrice) => {
       if (user.toLowerCase() === userAddress.toLowerCase()) {
         setLoading(false);
         getInventory();
@@ -75,52 +76,52 @@ const Inventory = ({
 
   // TODO: aynsı traktör için de yap
 
-  const getInventory = async () => {
-    if (
-      !signer ||
-      !contracts?.treeNftContract ||
-      !contracts?.tractorNftContract
-    ) {
-      console.error("Signer or contracts are not available.");
-      return;
-    }
-    const treeNftWithSigner = contracts?.treeNftContract.connect(signer);
-    const tractorNftWithSigner = contracts?.tractorNftContract.connect(signer);
+  // const getInventory = async () => {
+  //   if (
+  //     !signer ||
+  //     !contracts?.treeNftContract ||
+  //     !contracts?.tractorNftContract
+  //   ) {
+  //     console.error("Signer or contracts are not available.");
+  //     return;
+  //   }
+  //   const treeNftWithSigner = contracts?.treeNftContract.connect(signer);
+  //   const tractorNftWithSigner = contracts?.tractorNftContract.connect(signer);
 
-    try {
-      const treeBalance = await treeNftWithSigner.balanceOf(userAddress, 0);
-      const tractorBalance = await tractorNftWithSigner.balanceOf(
-        userAddress,
-        1
-      );
+  //   try {
+  //     const treeBalance = await treeNftWithSigner.balanceOf(userAddress, 0);
+  //     const tractorBalance = await tractorNftWithSigner.balanceOf(
+  //       userAddress,
+  //       1
+  //     );
 
-      const inventoryItems = [];
+  //     const inventoryItems = [];
 
-      if (treeBalance > 0) {
-        inventoryItems.push({
-          title: "tree",
-          image: "/agac.png",
-          quantity: treeBalance.toString(),
-        });
-      }
+  //     if (treeBalance > 0) {
+  //       inventoryItems.push({
+  //         title: "tree",
+  //         image: "/agac.png",
+  //         quantity: treeBalance.toString(),
+  //       });
+  //     }
 
-      if (tractorBalance > 0) {
-        inventoryItems.push({
-          title: "tractor",
-          image: "/tractor.png",
-          quantity: tractorBalance.toString(),
-        });
-      }
+  //     if (tractorBalance > 0) {
+  //       inventoryItems.push({
+  //         title: "tractor",
+  //         image: "/tractor.png",
+  //         quantity: tractorBalance.toString(),
+  //       });
+  //     }
 
-      setInventory(inventoryItems);
-    } catch (error) {
-      console.error("Error fetching inventory:", error);
-    }
-  };
+  //     setInventory(inventoryItems);
+  //   } catch (error) {
+  //     console.error("Error fetching inventory:", error);
+  //   }
+  // };
 
-  useEffect(() => {
-    getInventory(); // Kullanıcı girdiğinde envanteri yükle
-  }, [signer, contracts, userAddress]);
+  // useEffect(() => {
+  //   getInventory(); // Kullanıcı girdiğinde envanteri yükle
+  // }, [signer, contracts, userAddress]);
 
   return (
     <>

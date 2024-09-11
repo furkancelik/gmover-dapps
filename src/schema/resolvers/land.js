@@ -3,7 +3,6 @@ import Land from "@/models/Land";
 export const landResolvers = {
   Query: {
     getLand: async (_, { walletAddress }) => {
-      console.log("walletAddress", walletAddress);
       return await Land.findOne({ walletAddress });
     },
     getAllLands: async () => {
