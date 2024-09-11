@@ -10,28 +10,28 @@ const tractorStakingContract = require("../../artifacts/contracts/TractorStaking
 
 export const CONTRACTS = {
   landGameContract: {
-    address: "0x0F66A1C3a0cCDa981CbBA405582036c0655Fe146",
+    address: "0xB9411caB8fC198c49d72137ffBc04A97ca70aF82",
     ABI: landGameContract.abi,
   },
 
   gmoveTokenContract: {
-    address: "0xc30682F61f7b669aca86Be2a7Ff7a456a8b20Deb",
+    address: "0x28a5e22F6772b919274C39301C2DfAFEC1F383e0",
     ABI: gmoveContract.abi,
   },
   treeNftContract: {
-    address: "0xD88a9472411F01E35CCe8D255913Fc2bfBDbF62E",
+    address: "0xC6EcDC1ccCb408033bf0D5e7eC7Dc43297f09E25",
     ABI: treeNftContract.abi,
   },
   tractorNftContract: {
-    address: "0x69FFf74aF4a6aAb5eDafCF12d9ff4201112071c6",
+    address: "0x0e54626B24ECb6BA26d3640D4a1A318Bdc1C9D0F",
     ABI: tractorNftContract.abi,
   },
   treeStakingContract: {
-    address: "0x63Fc030CbbAc3bC7B4859402F8E35AB53C0d3522",
+    address: "0x3077cE62839b65A2F0FDc00D5A7f70159F89F856",
     ABI: treeStakingContract.abi,
   },
   tractorStakingContract: {
-    address: "0x6a7721e83B5829D09F6eAAf02BAd080779f5E2fF",
+    address: "0xdBc21cDF4283427F78fc296406d48f8822D14E4a",
     ABI: tractorStakingContract.abi,
   },
 };

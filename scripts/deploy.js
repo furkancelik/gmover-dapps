@@ -1,33 +1,37 @@
 const hre = require("hardhat");
 
 async function main() {
+  console.log("Start Deploy");
   const initialSupply = hre.ethers.parseUnits("10000000000", 18); // 1 milyon token, 18 ondalık basamak ile
-  const TRACTOR_NFT_REWARD_RATE = "10000000000000000000000";
+  const TRACTOR_NFT_REWARD_RATE = "1000000000000000000000";
   const TREE_NFT_REWARD_RATE = "10000000000000000000";
 
   const GMOVE = await hre.ethers.getContractFactory("GMOVE");
   const gmove = await GMOVE.deploy(initialSupply);
+  console.log("GMOVE Deploy Ready!");
   await gmove.waitForDeployment();
   const GMOVE_ADDRESS = gmove.target;
 
   const LandGame = await hre.ethers.getContractFactory("LandGame");
   const landGame = await LandGame.deploy(GMOVE_ADDRESS);
+  console.log("LandGame Deploy Ready!");
   await landGame.waitForDeployment();
   const LAND_GAME_ADDRESS = landGame.target;
 
   const TractorNFT = await hre.ethers.getContractFactory("TractorNFT");
   const tractorNFT = await TractorNFT.deploy(GMOVE_ADDRESS);
+  console.log("TractorNFT Deploy Ready!");
   await tractorNFT.waitForDeployment();
   const TRACTOR_NFT_ADDRESS = tractorNFT.target;
 
   const TreeNFT = await hre.ethers.getContractFactory("TreeNFT");
   const treeNFT = await TreeNFT.deploy(GMOVE_ADDRESS);
+  console.log("TreeNFT Deploy Ready!");
   await treeNFT.waitForDeployment();
   const TREE_NFT_ADDRESS = treeNFT.target;
 
   // TractorStaking kontratını alıyoruz
   const TractorStaking = await hre.ethers.getContractFactory("TractorStaking");
-
   // TractorStaking kontratını deploy ediyoruz, TreeNFT ve GMOVE adreslerini constructor'a geçiyoruz
   const tractorStaking = await TractorStaking.deploy(
     TRACTOR_NFT_ADDRESS,
@@ -35,6 +39,7 @@ async function main() {
     LAND_GAME_ADDRESS,
     TRACTOR_NFT_REWARD_RATE
   );
+  console.log("TractorStaking Deploy Ready!");
 
   // Deployment işlemini bekliyoruz
   await tractorStaking.waitForDeployment();
@@ -50,11 +55,12 @@ async function main() {
     LAND_GAME_ADDRESS,
     TREE_NFT_REWARD_RATE
   );
-
+  console.log("TreeStaking Deploy Ready!");
   // Deployment işlemini bekliyoruz
   await treeStaking.waitForDeployment();
   const TREE_STAKING_ADDRESS = treeStaking.target;
 
+  console.log("Deploy End!");
   console.log(
     "------------------------=CONTRACT LIST=------------------------"
   );
