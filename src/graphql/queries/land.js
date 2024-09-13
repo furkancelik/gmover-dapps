@@ -14,6 +14,7 @@ export const GET_LAND = gql`
 export const CREATE_LAND = gql`
   mutation CreateLand($input: LandInput!) {
     createLand(input: $input) {
+      id
       walletAddress
       gridState
       resources

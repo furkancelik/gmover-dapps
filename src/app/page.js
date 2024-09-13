@@ -29,6 +29,7 @@ const Page = () => {
 
   const [lastClaimTime, setLastClaimTime] = useState(null);
   const [claimLoading, setClaimLoading] = useState(false);
+  const [landID, setLandID] = useState(null);
 
   const [loading, setLoading] = useState(true);
   const [stakeLoading, setStakeLoading] = useState(false);
@@ -62,7 +63,7 @@ const Page = () => {
       getResourceBalance();
 
       try {
-        await createLand({
+        const { data } = await createLand({
           variables: {
             input: {
               walletAddress: userAddress,
@@ -71,6 +72,7 @@ const Page = () => {
             },
           },
         });
+        setLandID(data.createLand.id);
       } catch (e) {
         console.error("Error creating land:", e);
       }
@@ -788,6 +790,7 @@ const Page = () => {
       />
 
       <RightMenu
+        landId={landID}
         getInventory={getInventory}
         updateGmoveBalance={getBalanceGMOVE}
         setShowSideMenu={setShowSideMenu}

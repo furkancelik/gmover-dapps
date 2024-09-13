@@ -2,10 +2,19 @@ import { FaCheck, FaGift } from "react-icons/fa6";
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
 
-const MissionsContent = () => (
-  <div className="mb-4 mx-auto">
-    <h2 className="text-xl font-bold mt-2 mb-1 text-black">Daily Tasks</h2>
-    <ul className="text-sm">
+import DiscordFlow from "../DiscordFlow";
+import TaskManagement from "../TaskManagement";
+import TwitterConnectButton from "../TwitterConnectButton";
+import Profile from "../Profile";
+import TaskItem from "../TaskItem";
+import TelegramJoinGroupButton from "../TelegramJoinGroupButton";
+import ClaimLandButton from "../ClaimLandButton";
+import ClaimTreeButton from "../ClaimTreeButton";
+
+const MissionsContent = ({ landId }) => (
+  <div className="mb-4 mx-auto w-full">
+    <h2 className="text-xl font-bold mt-2 mb-1 text-black">Tasks</h2>
+    {/* <ul className="text-sm">
       {[
         {
           title: (
@@ -99,7 +108,84 @@ const MissionsContent = () => (
           </div>
         </li>
       ))}
+    </ul> */}
+
+    <ul className="text-sm ">
+      <li className={`flex items-center`}>
+        <TaskItem
+          landId={landId}
+          taskId={"DISCORD_FARMER_ROLE"}
+          complateTitle={"Follow us on Twitter!"}
+          rewardsTitle={"100XP"}
+        >
+          {() => <TwitterConnectButton landId={landId} />}
+        </TaskItem>
+      </li>
+
+      <li className={`flex items-center`}>
+        <TaskItem
+          landId={landId}
+          taskId={"DISCORD_FARMER_ROLE"}
+          complateTitle={"Connect DC and claim roles!"}
+          rewardsTitle={"500XP"}
+        >
+          {() => <DiscordFlow landId={landId} />}
+        </TaskItem>
+      </li>
+
+      <li className={`flex items-center`}>
+        <TaskItem
+          landId={landId}
+          taskId={"TELEGRAM_JOIN"}
+          complateTitle={"Join our Telegram Group!"}
+          rewardsTitle={"100XP"}
+        >
+          {(props) => <TelegramJoinGroupButton landId={landId} {...props} />}
+          {/* <TelegramJoinGroupButton landId={landId}  /> */}
+        </TaskItem>
+      </li>
+
+      <li className={`flex items-center`}>
+        <TaskItem
+          landId={landId}
+          taskId={"CLAIM_GRASS_LAND_1"}
+          complateTitle={"Claim 1 grass area succes!"}
+          rewardsTitle={"100XP"}
+        >
+          {(props) => (
+            <ClaimLandButton
+              grassSize={1}
+              taskId={"CLAIM_GRASS_LAND_1"}
+              xpReward={100}
+              landId={landId}
+              {...props}
+            />
+          )}
+        </TaskItem>
+      </li>
+
+      <li className={`flex items-center`}>
+        <TaskItem
+          landId={landId}
+          taskId={"CLAIM_TREE_1"}
+          complateTitle={"Stake 1 tree succes!"}
+          rewardsTitle={"100XP"}
+        >
+          {(props) => (
+            <ClaimTreeButton
+              taskId={"CLAIM_TREE_1"}
+              xpReward={100}
+              landId={landId}
+              {...props}
+            />
+          )}
+        </TaskItem>
+      </li>
     </ul>
+    {/* <AuthButton />
+    <RoleCheck /> */}
+    {/* <DiscordFlow /> */}
+    {/* <TaskManagement userId={"userId"} /> */}
   </div>
 );
 

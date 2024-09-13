@@ -17,6 +17,10 @@ const landSchema = new mongoose.Schema(
       type: Number,
       default: 0, // Başlangıçta 0 kaynak
     },
+    xp: {
+      type: Number,
+      default: 0, // Başlangıçta 0 kaynak
+    },
     lastResourceClaimTime: {
       type: Date,
       default: null, // Kaynak henüz toplanmadıysa null

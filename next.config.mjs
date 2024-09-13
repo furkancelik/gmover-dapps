@@ -1,6 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: false,
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        "discord.js": false,
+      };
+    }
+    return config;
+  },
   env: {
     DEFAULT_NETWORK: "0x780c", // Movement EVM ağının chain ID'si
 

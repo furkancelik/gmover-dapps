@@ -10,6 +10,7 @@ import ResourceContent from "../Page/ResourceContent";
 import MarketContent from "../Page/MarketContent";
 
 export default function RightMenu({
+  landId,
   getInventory,
   updateGmoveBalance,
   setShowSideMenu,
@@ -91,6 +92,7 @@ export default function RightMenu({
       case "missions":
         return (
           <MissionsContent
+            landId={landId}
             openModalWithContent={openModalWithContent}
             setIsModalOpen={setIsModalOpen}
           />
@@ -98,6 +100,7 @@ export default function RightMenu({
       default:
         return (
           <HomeContent
+            landId={landId}
             setInventory={setInventory}
             kaynak={kaynak}
             para={para}

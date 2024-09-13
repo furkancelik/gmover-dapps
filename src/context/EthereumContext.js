@@ -45,6 +45,8 @@ export const EthereumProvider = ({ children }) => {
   };
 
   const changeNetwork = async (networkParams = process.env.networkParams) => {
+    console.log("nightly:::", window.nightly);
+
     if (!window.ethereum) {
       console.error("MetaMask is not installed!");
       return;

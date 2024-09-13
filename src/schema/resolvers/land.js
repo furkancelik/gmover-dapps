@@ -19,7 +19,10 @@ export const landResolvers = {
         { new: true, upsert: true, setDefaultsOnInsert: true } // Bulunamazsa yeni kayıt oluştur
       );
 
-      return updatedLand; // Güncellenen veya oluşturulan veriyi döndür
+      return {
+        ...updatedLand.toObject(), // Mevcut veri
+        id: updatedLand._id, // ID'yi döndür
+      };
     },
 
     updateLand: async (_, { walletAddress, input }) => {

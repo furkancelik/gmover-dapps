@@ -1,7 +1,9 @@
 import Inventory from "../Inventory";
+import TotalXP from "../TotalXP";
 import InventoryItem from "./InventoryItem";
 
 const HomeContent = ({
+  landId,
   inventory,
   setSelectedContent,
   selectedItem,
@@ -23,6 +25,12 @@ const HomeContent = ({
         <li className="flex flex-row">
           <div className="">Total GMOVE:</div>
           <span className="ml-1 font-bold text-center">{para}</span>
+        </li>
+        <li className="flex flex-row">
+          <div className="">Total XP:</div>
+          <span className="ml-1 font-bold text-center">
+            <TotalXP landId={landId} />
+          </span>
         </li>
         <li className="flex flex-row">
           <div className="">Average Farm Earnings:</div>
