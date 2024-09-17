@@ -57,5 +57,29 @@ export const landResolvers = {
       land.lastResourceClaimTime = now;
       return await land.save();
     },
+
+    updateTwitter: async (_, { landId, twitter }) => {
+      const updatedLand = await Land.findByIdAndUpdate(
+        landId,
+        { $set: { twitter } },
+        { new: true }
+      );
+      if (!updatedLand) {
+        throw new Error("Land not found");
+      }
+      return updatedLand;
+    },
+
+    updateDiscord: async (_, { landId, discord }) => {
+      const updatedLand = await Land.findByIdAndUpdate(
+        landId,
+        { $set: { discord } },
+        { new: true }
+      );
+      if (!updatedLand) {
+        throw new Error("Land not found");
+      }
+      return updatedLand;
+    },
   },
 };

@@ -41,6 +41,7 @@ export const authOptions = {
         ...session.user,
         ...token.user,
       };
+
       return session;
     },
   },

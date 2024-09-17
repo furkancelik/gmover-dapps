@@ -146,7 +146,6 @@ const Page = () => {
     try {
       const balance = await getGMOVEBalance(userAddress);
       setPara(parseFloat(balance).toFixed(2));
-      console.log("BALANCE:", parseFloat(balance).toFixed(2));
     } catch (error) {
       console.error("Error fetching GMOVE balance:", error);
     }

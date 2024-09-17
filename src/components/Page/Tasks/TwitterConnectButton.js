@@ -4,13 +4,32 @@ import React, { useEffect, useState } from "react";
 import { ADD_TASK, GET_SPECIFIC_TASK } from "@/graphql/queries/task";
 import { useMutation, useQuery } from "@apollo/client";
 import { useSession, signIn } from "next-auth/react";
+import { UPDATE_TWITTER } from "@/graphql/queries/land";
 
 const TwitterConnectButton = ({ landId, refetch }) => {
   const [addTask] = useMutation(ADD_TASK);
+  const [updateTwitter] = useMutation(UPDATE_TWITTER);
+
   const { data: session } = useSession();
+
+  useEffect(() => {
+    //
+  }, [session?.twitter]);
 
   const handleAddTask = async () => {
     try {
+      if (session?.twitter) {
+        // Twitter bilgilerini güncelle
+        await updateTwitter({
+          variables: {
+            landId: landId,
+            twitter: {
+              id: session?.user?.id,
+              screen_name: session?.user?.name,
+            },
+          },
+        });
+      }
       await addTask({
         variables: {
           userId: session?.twitter?.id,

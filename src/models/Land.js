@@ -25,6 +25,15 @@ const landSchema = new mongoose.Schema(
       type: Date,
       default: null, // Kaynak henüz toplanmadıysa null
     },
+    twitter: {
+      id: { type: String, default: "" },
+      screen_name: { type: String, default: "" },
+    },
+    discord: {
+      id: { type: String, default: "" },
+      username: { type: String, default: "" },
+      email: { type: String, default: "" },
+    },
   },
   { timestamps: true } // createdAt ve updatedAt için otomatik timestamp
 );

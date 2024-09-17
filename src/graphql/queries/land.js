@@ -22,3 +22,27 @@ export const CREATE_LAND = gql`
     }
   }
 `;
+
+export const UPDATE_TWITTER = gql`
+  mutation UpdateTwitter($landId: ID!, $twitter: TwitterInput!) {
+    updateTwitter(landId: $landId, twitter: $twitter) {
+      id
+      twitter {
+        id
+        screen_name
+      }
+    }
+  }
+`;
+
+export const UPDATE_DISCORD = gql`
+  mutation UpdateDiscord($landId: ID!, $discord: DiscordInput!) {
+    updateDiscord(landId: $landId, discord: $discord) {
+      id
+      discord {
+        id
+        username
+      }
+    }
+  }
+`;

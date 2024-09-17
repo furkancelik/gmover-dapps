@@ -10,7 +10,6 @@ export default function GuildCheck({ children }) {
     skip: !session?.discord,
   });
 
-  console.log(">>>sessionsessionsession:", session);
   if (!session?.discord) return null;
   if (loading) return <div>Checking Discord server membership...</div>;
   if (error) return <div>Error checking Discord server membership</div>;
