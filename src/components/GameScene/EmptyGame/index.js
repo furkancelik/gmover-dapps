@@ -1,7 +1,12 @@
 "use client";
 import { Stage, Container } from "@pixi/react";
 import { useEffect, useRef, useState } from "react";
-
+import {
+  setEthereumConnection,
+  getNFTDetails,
+  unstakeItem,
+  claimRewardForItem,
+} from "@/utils/contractHelpers";
 import GridTile from "@/components/GameScene/Grid/GridTile";
 import Tractor from "@/components/GameScene/Objects/Tractor";
 import Tree from "@/components/GameScene/Objects/Tree";
@@ -37,13 +42,16 @@ function RenderModal({
   col,
   itemType,
 }) {
-  const { userAddress, signer, contracts } = useEthereum();
+  const { userAddress, signer, contracts, provider } = useEthereum();
   const [loading, setLoading] = useState(true);
   const [stakedNFTDetails, setStakedNFTDetails] = useState(null);
 
   useEffect(() => {
-    getNFTDetails(itemType);
-  }, [row, col, itemType]);
+    if (signer && provider) {
+      setEthereumConnection(signer, provider);
+      fetchNFTDetails(itemType);
+    }
+  }, [row, col, itemType, signer, provider]);
 
   async function getTractorNFTDetails(row, col) {
     if (!signer || !contracts?.tractorStakingContract) {
@@ -104,17 +112,18 @@ function RenderModal({
     setLoading(false);
   }
 
-  async function getNFTDetails(itemType) {
-    if (!signer || !contracts?.treeStakingContract) {
-      console.error("Signer or contract not available");
-      return;
+  async function fetchNFTDetails() {
+    setLoading(true);
+    try {
+      const details = await getNFTDetails(itemType, row, col);
+      setStakedNFTDetails(details);
+    } catch (error) {
+      console.error(
+        `Error fetching NFT details for position (${row}, ${col}):`,
+        error
+      );
     }
-
-    if (itemType === "tree") {
-      await getTreeNFTDetails(row, col);
-    } else if (itemType === "tractor") {
-      await getTractorNFTDetails(row, col);
-    }
+    setLoading(false);
   }
 
   const calculateTimeRemaining = (stakedAt) => {
@@ -139,24 +148,12 @@ function RenderModal({
     return `${days}d ${hours}h ${minutes}m remaining`;
   };
 
-  const unstakeItem = async (row, col, itemType) => {
-    const contractKey =
-      itemType === "tree" ? "treeStakingContract" : "tractorStakingContract";
-
-    if (!signer || !contracts?.[contractKey]) {
-      toast.error(`Signer or ${itemType} staking contract not available`, {
-        containerId: "modal-container",
-      });
-      return;
-    }
+  const handleUnstake = async (row, col, itemType) => {
     setLoading(true);
 
     const unstakePromise = new Promise(async (resolve, reject) => {
       try {
-        const stakingContractWithSigner =
-          contracts[contractKey].connect(signer);
-        const tx = await stakingContractWithSigner.unstake(row, col);
-        await tx.wait();
+        const result = await unstakeItem(row, col, itemType);
         updateGmoveBalance();
         resolve(
           `${
@@ -214,11 +211,11 @@ function RenderModal({
   };
 
   const unstakeTree = async (row, col) => {
-    await unstakeItem(row, col, "tree");
+    await handleUnstake(row, col, "tree");
   };
 
   const unstakeTractor = async (row, col) => {
-    await unstakeItem(row, col, "tractor");
+    await handleUnstake(row, col, "tractor");
   };
 
   const unstake = async ({ item, row, col }) => {
@@ -313,22 +310,12 @@ function RenderModal({
   //   setLoading(false);
   // };
 
-  const claimRewardForItem = async (row, col, itemType) => {
-    const contractKey =
-      itemType === "tree" ? "treeStakingContract" : "tractorStakingContract";
-
-    if (!signer || !contracts?.[contractKey]) {
-      toast.error(`Signer or ${itemType} staking contract not available`);
-      return;
-    }
-    // setLoading(true);
-
+  const handleClaimReward = async (row, col, itemType) => {
+    setLoading(true);
     const claimRewardPromise = new Promise(async (resolve, reject) => {
       try {
-        const stakingContractWithSigner =
-          contracts[contractKey].connect(signer);
-        const tx = await stakingContractWithSigner.claimReward(row, col);
-        await tx.wait();
+        const result = await claimRewardForItem(row, col, itemType);
+
         updateGmoveBalance();
         resolve(
           `${
@@ -377,7 +364,7 @@ function RenderModal({
         }
       );
       // setIsModalOpen(false);
-      getNFTDetails(itemType);
+      fetchNFTDetails(itemType);
     } catch (error) {
       // Error is already handled by toast, so we don't need to do anything here
     } finally {
@@ -386,11 +373,11 @@ function RenderModal({
   };
 
   const claimRewardTree = async (row, col) => {
-    await claimRewardForItem(row, col, "tree");
+    await handleClaimReward(row, col, "tree");
   };
 
   const claimRewardTractor = async (row, col) => {
-    await claimRewardForItem(row, col, "tractor");
+    await handleClaimReward(row, col, "tractor");
   };
 
   const claimReward = async (row, col, itemType) => {

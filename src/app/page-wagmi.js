@@ -1,73 +1,82 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-
+import { useEffect, useState } from "react";
 import { useEthereum } from "../context/EthereumContext";
-import { ethers } from "ethers";
 import useContractEvent from "@/hooks/useContractEvent";
 import Modal from "@/components/Modal";
-
 import LeftMenu from "@/components/Layout/LeftMenu";
 import RightMenu from "@/components/Layout/RightMenu";
 import EmptyGame from "@/components/GameScene/EmptyGame";
 import Info from "@/components/Info";
-
-import { CREATE_LAND, GET_LAND } from "@/graphql/queries/land";
-import { useLazyQuery, useMutation, useQuery } from "@apollo/client";
+import { CREATE_LAND } from "@/graphql/queries/land";
+import { useMutation } from "@apollo/client";
 import { GRID_SIZE } from "@/constants/grid";
 import { toast } from "react-toastify";
+import WalletConnector2 from "@/components/WalletConnector2";
 
 import {
-  setEthereumConnection,
-  getLandState,
-  claimLand,
-  getGMOVEBalance,
-  getInventory,
-  stakeTree,
-  stakeTractor,
-  updateLand,
-  getResourceBalance,
-  getLastClaimTime,
-  claimResource,
+  useLandState,
+  useClaimLand,
+  useGMOVEBalance,
+  useInventory,
+  useStakeTree,
+  useStakeTractor,
+  useUpdateLand,
+  useResourceBalance,
+  useLastClaimTime,
+  useClaimResource,
 } from "@/utils/contractHelpers";
 
 const Page = () => {
-  const {
-    userAddress,
-    provider,
-    signer,
-    connectWallet,
-    contracts,
-    error: ethError,
-  } = useEthereum();
+  const { userAddress, error: ethError } = useEthereum();
 
   const [lastClaimTime, setLastClaimTime] = useState(null);
   const [claimLoading, setClaimLoading] = useState(false);
   const [landID, setLandID] = useState(null);
-
   const [loading, setLoading] = useState(true);
   const [stakeLoading, setStakeLoading] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [stakedNFTDetails, setStakedNFTDetails] = useState(null);
 
-  const [createLand, { data, loading: createLandLoading, error }] =
-    useMutation(CREATE_LAND);
+  const [createLand] = useMutation(CREATE_LAND);
+
+  const {
+    data: landState,
+    refetch: refetchLandState,
+    error: landStateError,
+  } = useLandState();
+  console.log("landStatelandState:", landState);
+  const { writeAsync: claimLandAsync } = useClaimLand();
+  const { data: gmoveBalance, refetch: refetchGMOVEBalance } =
+    useGMOVEBalance(userAddress);
+  const getInventory = useInventory();
+  const { writeAsync: stakeTreeAsync } = useStakeTree();
+  const { writeAsync: stakeTractorAsync } = useStakeTractor();
+  const { writeAsync: updateLandAsync } = useUpdateLand();
+  const { data: resourceBalance, refetch: refetchResourceBalance } =
+    useResourceBalance();
+  const { data: lastClaimTimeData } = useLastClaimTime();
+  const { writeAsync: claimResourceAsync } = useClaimResource();
 
   useEffect(() => {
     setErrorMessage(ethError);
   }, [ethError]);
 
+  useEffect(() => {
+    if (lastClaimTimeData) {
+      setLastClaimTime(parseInt(lastClaimTimeData.toString()));
+    }
+  }, [lastClaimTimeData]);
+
   async function onLoadGame() {
+    console.log("onLoadGameonLoadGame");
     try {
-      // Contract'ı signer ile bağlayın
-
-      const landState = await getLandState();
-
-      //TODO:çektiğin veriyi güncelle
-      setGridState(landState);
+      await refetchLandState();
+      console.log("landStatelandState:", landState);
+      !landStateError && setGridState(landState);
+      console.log("HATAAAA:>>>", landStateError);
       setLoading(false);
       setPlayGame(true);
-      fetchLastClaimTime();
-      fetchResourceBalance();
+      await refetchResourceBalance();
 
       try {
         const { data } = await createLand({
@@ -75,7 +84,7 @@ const Page = () => {
             input: {
               walletAddress: userAddress,
               gridState: landState,
-              resources: kaynak || 0,
+              resources: resourceBalance || 0,
             },
           },
         });
@@ -84,91 +93,64 @@ const Page = () => {
         console.error("Error creating land:", e);
       }
     } catch (error) {
+      console.log("EEEER:", error);
       if (error.reason === "You need to claim your land first.") {
         setLoading(false);
       } else {
         setErrorMessage(error.message);
-        // alert("beklenmedik bir hata meydana geldi!");
+        console.log("ERROR", error);
       }
     }
   }
 
   async function handleClaimLand() {
-    const claimLandPromise = new Promise(async (resolve, reject) => {
-      try {
-        const result = await claimLand();
-        resolve(result);
-      } catch (error) {
-        console.error("Error claiming land:", error);
-        reject(error);
-      }
-    });
-
-    toast.promise(
-      claimLandPromise,
-      {
-        pending: {
-          render() {
-            return "Claiming land...";
+    try {
+      await toast.promise(
+        claimLandAsync(),
+        {
+          pending: "Claiming land...",
+          success: "Land claimed successfully!",
+          error: {
+            render({ data }) {
+              return `Failed to claim land: ${data.message}`;
+            },
           },
-          icon: "🏗️",
         },
-        success: {
-          render({ data }) {
-            return `${data}`;
-          },
-          icon: "🏞️",
-        },
-        error: {
-          render({ data }) {
-            // Hata mesajını daha kullanıcı dostu hale getiriyoruz
-            let errorMessage = "Failed to claim land";
-            if (data.message.includes("You have already claimed your land")) {
-              errorMessage = "You have already claimed your land";
-            } else if (data.message.includes("Insufficient GMOVE balance")) {
-              errorMessage = "Insufficient GMOVE balance to claim land";
-            }
-            return errorMessage;
-          },
-          icon: "❌",
-        },
-      },
-      {
-        position: "top-center",
-        autoClose: 3000,
-      }
-    );
-
-    await claimLandPromise;
+        {
+          position: "top-center",
+          autoClose: 3000,
+        }
+      );
+      onLoadGame();
+    } catch (error) {
+      console.error("Error claiming land:", error);
+    }
   }
 
   async function getBalanceGMOVE() {
-    try {
-      const balance = await getGMOVEBalance(userAddress);
-      setPara(parseFloat(balance).toFixed(2));
-      console.log("BALANCE:", parseFloat(balance).toFixed(2));
-    } catch (error) {
-      console.error("Error fetching GMOVE balance:", error);
+    await refetchGMOVEBalance();
+    if (gmoveBalance) {
+      console.log("000BALANCE:", gmoveBalance);
+      setPara(parseFloat(gmoveBalance.formatted).toFixed(2));
+      console.log(
+        "BALANCE_END:",
+        parseFloat(gmoveBalance.formatted).toFixed(2)
+      );
     }
   }
 
   const fetchInventory = async () => {
-    try {
-      const inventoryItems = await getInventory(userAddress);
-      setInventory(inventoryItems);
-    } catch (error) {
-      console.error("Error fetching inventory:", error);
-    }
+    // inventory is already reactive, no need to fetch
+    setInventory(getInventory);
   };
 
   useEffect(() => {
-    if (signer && provider) {
-      setEthereumConnection(signer, provider);
+    if (userAddress) {
       getBalanceGMOVE();
       onLoadGame();
       fetchInventory();
     }
-  }, [userAddress, contracts?.landGameContract, signer, provider]);
+  }, [userAddress]);
 
   const [showSideMenu, setShowSideMenu] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -190,11 +172,16 @@ const Page = () => {
 
   const [playGame, setPlayGame] = useState(false);
 
+  /*TODO
+  // Bunları Güncelle
+
+
   useContractEvent("LandClaimed", contracts?.landGameContract, (user, land) => {
     if (user.toLowerCase() === userAddress.toLowerCase()) {
       onLoadGame();
     }
   });
+
 
   useContractEvent(
     "ResourceClaimed",
@@ -250,6 +237,8 @@ const Page = () => {
       }
     }
   );
+
+  */
 
   // const checkAndApproveForStaking = async (
   //   nftWithSigner,
@@ -386,26 +375,12 @@ const Page = () => {
 
   const handleStakeTree = async (row, col) => {
     setLoading(true);
-    const stakePromise = new Promise(async (resolve, reject) => {
-      try {
-        const result = await stakeTree(row, col);
-        onLoadGame();
-        resolve(result);
-      } catch (error) {
-        reject(error);
-      }
-    });
-
     try {
       await toast.promise(
-        stakePromise,
+        stakeTreeAsync({ args: [row, col] }),
         {
           pending: "Staking Tree NFT...",
-          success: {
-            render({ data }) {
-              return `${data}`;
-            },
-          },
+          success: "Tree NFT staked successfully!",
           error: {
             render({ data }) {
               return `Failed to stake Tree NFT: ${data.message}`;
@@ -417,7 +392,7 @@ const Page = () => {
           autoClose: 5000,
         }
       );
-      // fetchStakedNFTDetails();
+      onLoadGame();
     } catch (error) {
       console.error("Error staking Tree NFT:", error);
     } finally {
@@ -427,27 +402,12 @@ const Page = () => {
 
   const handleStakeTractor = async (row, col) => {
     setLoading(true);
-
-    const stakePromise = new Promise(async (resolve, reject) => {
-      try {
-        const result = await stakeTractor(row, col);
-        onLoadGame();
-        resolve(result);
-      } catch (error) {
-        reject(error);
-      }
-    });
-
     try {
       await toast.promise(
-        stakePromise,
+        stakeTractorAsync({ args: [row, col] }),
         {
           pending: "Staking Tractor NFT...",
-          success: {
-            render({ data }) {
-              return `${data}`;
-            },
-          },
+          success: "Tractor NFT staked successfully!",
           error: {
             render({ data }) {
               return `Failed to stake Tractor NFT: ${data.message}`;
@@ -459,7 +419,7 @@ const Page = () => {
           autoClose: 5000,
         }
       );
-      // fetchStakedNFTDetails();
+      onLoadGame();
     } catch (error) {
       console.error("Error staking Tractor NFT:", error);
     } finally {
@@ -502,115 +462,67 @@ const Page = () => {
   // }
 
   async function handleUpdateLand(row, col, newState, resourceAmount) {
-    const updateLandPromise = new Promise(async (resolve, reject) => {
-      try {
-        setClaimLoading(true);
-        const result = await updateLand(row, col, newState, resourceAmount);
-        resolve(result);
-      } catch (error) {
-        console.error("Error updating land and using resources:", error);
-        reject(error);
-      } finally {
-        setClaimLoading(false);
-      }
-    });
-
-    toast.promise(
-      updateLandPromise,
-      {
-        pending: {
-          render() {
-            return `Updating land to ${newState}...`;
-          },
-          icon: "🔄",
-        },
-        success: {
-          render({ data }) {
-            return `${data}`;
-          },
-          icon: "🌳",
-        },
-        error: {
-          render({ data }) {
-            return `Failed to update land: ${data.message}`;
-          },
-          icon: "❌",
-        },
-      },
-      {
-        position: "top-center",
-        autoClose: 5000,
-      }
-    );
-
     try {
-      await updateLandPromise;
+      await toast.promise(
+        updateLandAsync({ args: [row, col, newState, resourceAmount] }),
+        {
+          pending: `Updating land to ${newState}...`,
+          success: `Land updated to ${newState} successfully!`,
+          error: {
+            render({ data }) {
+              return `Failed to update land: ${data.message}`;
+            },
+          },
+        },
+        {
+          position: "top-center",
+          autoClose: 5000,
+        }
+      );
       onLoadGame();
-    } catch (error) {}
+    } catch (error) {
+      console.error("Error updating land:", error);
+    }
   }
 
   async function fetchResourceBalance() {
-    try {
-      const balance = await getResourceBalance();
-      setKaynak(balance);
-    } catch (error) {
-      console.error("Error fetching resource balance:", error);
+    await refetchResourceBalance();
+    if (resourceBalance) {
+      setKaynak(parseInt(resourceBalance.toString()));
     }
   }
 
-  async function fetchLastClaimTime() {
-    try {
-      const lastTime = await getLastClaimTime();
-      setLastClaimTime(lastTime);
-    } catch (error) {
-      console.error("Error fetching last resource claim time:", error);
-    }
-  }
+  // async function fetchLastClaimTime() {
+  //   try {
+  //     const lastTime = await getLastClaimTime();
+  //     setLastClaimTime(lastTime);
+  //   } catch (error) {
+  //     console.error("Error fetching last resource claim time:", error);
+  //   }
+  // }
 
   async function handleClaimResource() {
-    const claimPromise = new Promise(async (resolve, reject) => {
-      try {
-        const result = await claimResource();
-        resolve(result);
-      } catch (error) {
-        console.error("Error claiming resource:", error);
-        reject(error);
-      }
-    });
-
-    toast.promise(
-      claimPromise,
-      {
-        pending: {
-          render() {
-            return "Claiming resource...";
-          },
-          icon: "🕒",
-        },
-        success: {
-          render({ data }) {
-            return `${data}`;
-          },
-          icon: "🎉",
-        },
-        error: {
-          render({ data }) {
-            return `Failed to claim resource: ${data.message}`;
-          },
-          icon: "❌",
-        },
-      },
-      {
-        position: "top-center",
-        autoClose: 3000,
-      }
-    );
-
     try {
-      await claimPromise;
+      await toast.promise(
+        claimResourceAsync(),
+        {
+          pending: "Claiming resource...",
+          success: "Resource claimed successfully!",
+          error: {
+            render({ data }) {
+              return `Failed to claim resource: ${data.message}`;
+            },
+          },
+        },
+        {
+          position: "top-center",
+          autoClose: 3000,
+        }
+      );
       fetchResourceBalance();
-      fetchLastClaimTime();
+      // No need to call fetchLastClaimTime as it's reactive now
     } catch (error) {
+      console.error("Error claiming resource:", error);
     } finally {
       setClaimLoading(false);
     }
@@ -626,8 +538,6 @@ const Page = () => {
     <>
       {!playGame && (
         <Info
-          openModalWithContent={openModalWithContent}
-          setIsModalOpen={setIsModalOpen}
           error={errorMessage}
           loading={loading}
           setPlayGame={setPlayGame}

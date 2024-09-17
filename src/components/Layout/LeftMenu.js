@@ -138,7 +138,9 @@ export default function LeftMenu({
             ))}
           </>
         ) : (
-          <button onClick={() => connectWallet()}>
+          <button
+            onClick={() => connectWallet(openModalWithContent, setIsModalOpen)}
+          >
             <div className="relative flex items-center justify-center ">
               <img src="/item-show-bg.png" className="w-[180px]  " />
               <div className="absolute left-1/2 -translate-x-1/2 top-1/2 -translate-y-1/2 flex items-center justify-center w-full  ">

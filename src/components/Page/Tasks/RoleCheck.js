@@ -7,9 +7,7 @@ import {
 } from "@/graphql/queries/roleLimit";
 import { useMutation, useQuery } from "@apollo/client";
 import { ADD_TASK } from "@/graphql/queries/task";
-
-const FARMER_ROLE_ID = "1283529173490470966";
-const XOG_ROLE_ID = "1283590105445171201";
+import { FARMER_ROLE_ID, XOG_ROLE_ID } from "@/constants/resource";
 
 function ClaimRole({
   refetchRoles,
@@ -26,10 +24,10 @@ function ClaimRole({
     if (!session?.discord?.id) return;
 
     try {
-      const { data } = await addRole({
+      const { data, errors } = await addRole({
         variables: { userId: session?.discord?.id, roleId },
       });
-      console.log("DATA:", data, session?.discord?.id, roleId);
+
       if (data?.addRoleToUser?.success) {
         rewards && rewards();
         setRoleAdded(true);
@@ -47,16 +45,18 @@ function ClaimRole({
 
   if (roleAdded) return <p>Role added successfully!</p>;
 
-  if (isLimitReached && roleId === "1283590105445171201")
-    return <>xOG role limit reached. Cannot add more xOG roles.</>;
+  if (isLimitReached && roleId === XOG_ROLE_ID)
+    return (
+      <>Early Farmer role limit reached. Cannot add more Early Farmer roles.</>
+    );
 
   return <div onClick={handleAddRole}>{title}</div>;
 }
 
 export default function RoleCheck({ landId }) {
   const [addTask] = useMutation(ADD_TASK);
-
   const { data: session } = useSession();
+
   const {
     loading: loadingFarmer,
     data: farmerData,

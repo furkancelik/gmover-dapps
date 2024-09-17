@@ -1,1 +1,4 @@
 export const RESOURCE_CLAIM_INTERVAL = 60 * 60 * 24; //Birgün
+
+export const FARMER_ROLE_ID = "1283529173490470966";
+export const XOG_ROLE_ID = "1283590105445171201";

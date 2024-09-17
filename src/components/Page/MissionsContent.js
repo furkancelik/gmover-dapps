@@ -2,14 +2,13 @@ import { FaCheck, FaGift } from "react-icons/fa6";
 import { Tooltip } from "react-tooltip";
 import "react-tooltip/dist/react-tooltip.css";
 
-import DiscordFlow from "../DiscordFlow";
-import TaskManagement from "../TaskManagement";
-import TwitterConnectButton from "../TwitterConnectButton";
-import Profile from "../Profile";
-import TaskItem from "../TaskItem";
-import TelegramJoinGroupButton from "../TelegramJoinGroupButton";
-import ClaimLandButton from "../ClaimLandButton";
-import ClaimTreeButton from "../ClaimTreeButton";
+import ClaimLandButton from "./Tasks/ClaimLandButton";
+import ClaimTreeButton from "./Tasks/ClaimTreeButton";
+import DiscordFlow from "./Tasks/DiscordFlow";
+import TaskManagement from "./Tasks/TaskManagement";
+import TwitterConnectButton from "./Tasks/TwitterConnectButton";
+import TaskItem from "./Tasks/TaskItem";
+import TelegramJoinGroupButton from "./Tasks/TelegramJoinGroupButton";
 
 const MissionsContent = ({ landId }) => (
   <div className="mb-4 mx-auto w-full">
@@ -114,11 +113,11 @@ const MissionsContent = ({ landId }) => (
       <li className={`flex items-center`}>
         <TaskItem
           landId={landId}
-          taskId={"DISCORD_FARMER_ROLE"}
+          taskId={"TWITTER_FOLLOW"}
           complateTitle={"Follow us on Twitter!"}
           rewardsTitle={"100XP"}
         >
-          {() => <TwitterConnectButton landId={landId} />}
+          {(props) => <TwitterConnectButton landId={landId} {...props} />}
         </TaskItem>
       </li>
 
@@ -173,6 +172,7 @@ const MissionsContent = ({ landId }) => (
         >
           {(props) => (
             <ClaimTreeButton
+              treeSize={1}
               taskId={"CLAIM_TREE_1"}
               xpReward={100}
               landId={landId}

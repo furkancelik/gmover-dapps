@@ -16,7 +16,14 @@ const SCREEN_DRY_LAND = 4;
 const SCREEN_GRASS_LAND = 5;
 const SCREEN_PLAY_GAME = 6;
 
-const Info = ({ setPlayGame, loading, claimLand, error }) => {
+const Info = ({
+  setPlayGame,
+  loading,
+  claimLand,
+  error,
+  openModalWithContent,
+  setIsModalOpen,
+}) => {
   const [buttonLoading, setButtonLoading] = useState(false);
   const [buttonError, setButtonError] = useState(false);
   const { userAddress, connectWallet } = useEthereum();
@@ -56,14 +63,32 @@ const Info = ({ setPlayGame, loading, claimLand, error }) => {
           </div>
         );
       }
-      return (
-        <div className="">
-          <h3>Loading Game...</h3>
-          <p className=" w-full flex items-center justify-center mt-4">
-            <ImSpinner8 size={30} className="animate-spin text-4xl" />
-          </p>
-        </div>
-      );
+
+      if (!userAddress) {
+        return (
+          <div className="">
+            <h3 className="font-semibold">Connect Wallet</h3>
+            <button
+              key={"button-connect-wallet"}
+              onClick={() =>
+                connectWallet(openModalWithContent, setIsModalOpen)
+              }
+              className="mt-4 px-7 py-2 bg-gradient-to-t from-[#48b407] to-[#97e70c] active:from-[#48b407] active:to-[#97e70c] hover:from-[#a1f411] hover:to-[#3f9c07]  border-b-[5px] border-[#208200] rounded-2xl text-lg shadow shadow-black/60 text-white "
+            >
+              Connect Wallet
+            </button>
+          </div>
+        );
+      } else {
+        return (
+          <div className="">
+            <h3>Loading Game...</h3>
+            <p className=" w-full flex items-center justify-center mt-4">
+              <ImSpinner8 size={30} className="animate-spin text-4xl" />
+            </p>
+          </div>
+        );
+      }
     }
     switch (screen) {
       case SCREEN_CONNECT_WALLET:
@@ -84,7 +109,9 @@ const Info = ({ setPlayGame, loading, claimLand, error }) => {
               delay={500}
             />
             <button
-              onClick={connectWallet}
+              onClick={() =>
+                connectWallet(openModalWithContent, setIsModalOpen)
+              }
               className="mt-4 px-7 py-2 bg-gradient-to-t from-[#48b407] to-[#97e70c] active:from-[#48b407] active:to-[#97e70c] hover:from-[#a1f411] hover:to-[#3f9c07]  border-b-[5px] border-[#208200] rounded-2xl text-lg shadow shadow-black/60 text-white "
             >
               Connect Wallet

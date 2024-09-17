@@ -15,7 +15,7 @@ const nextConfig = {
 
     // // Movement EVM ağı için yapılandırma
     networkParams: {
-      chainId: "0x780c", // Movement EVM ağı için hexadecimal chain ID (0x1a4 = 420)
+      chainId: "0x780c", // Movement EVM ağı için hexadecimal chain ID (0x780c = 30732)
       chainName: "Movement EVM",
       nativeCurrency: {
         name: "MOVE",

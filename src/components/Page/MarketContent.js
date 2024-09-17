@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import Inventory from "../Inventory";
 import { toast } from "react-toastify";
+import { setEthereumConnection, handlePurchase } from "@/utils/contractHelpers";
 
 const MarketContent = ({
   getInventory,
@@ -20,6 +21,12 @@ const MarketContent = ({
   const { userAddress, provider, signer, contracts } = useEthereum();
 
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (signer && provider) {
+      setEthereumConnection(signer, provider);
+    }
+  }, [signer, provider]);
 
   // TODO: sabit olarak çekebiliriz.
   const items = [
@@ -313,33 +320,17 @@ const MarketContent = ({
     return buyTractorPromise;
   };
 
-  const handlePurchase = async (item) => {
-    if (!signer || !contracts?.gmoveTokenContract) {
-      toast.error("Signer or GMOVE contract is not available.");
-      return;
-    }
-
+  const handleItemPurchase = async (item) => {
     const purchasePromise = new Promise(async (resolve, reject) => {
       try {
         setLoading(true);
-        const gmoveWithSigner = contracts?.gmoveTokenContract.connect(signer);
-        const balance = await gmoveWithSigner.balanceOf(userAddress);
-        const itemCost = ethers.parseUnits(item.price.toString(), 18);
-        const balanceBN = BigInt(balance);
+        const result = await handlePurchase(item);
 
-        if (balanceBN >= itemCost) {
-          if (item.type === "tree") {
-            await buyTree(item);
-          } else if (item.type === "tractor") {
-            await buyTractor(item);
-          }
-          updateGmoveBalance();
-          getInventory();
-          resolve(`Successfully purchased ${item.type}`);
-        } else {
-          reject(new Error("Insufficient GMOVE balance"));
-        }
+        updateGmoveBalance();
+        getInventory();
+        resolve(`Successfully purchased ${item.type}`);
       } catch (error) {
+        console.log(error);
         reject(error);
       } finally {
         setLoading(false);
@@ -423,7 +414,7 @@ const MarketContent = ({
                       </p>
                       <button
                         onClick={() => {
-                          handlePurchase(item);
+                          handleItemPurchase(item);
                           // buy(item);
                           setIsModalOpen(false);
                         }}

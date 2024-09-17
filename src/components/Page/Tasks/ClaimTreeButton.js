@@ -3,13 +3,26 @@ import { useSession } from "next-auth/react";
 import { ADD_TASK } from "@/graphql/queries/task";
 import { useMutation } from "@apollo/client";
 import { useEthereum } from "@/context/EthereumContext";
+import { setEthereumConnection, getLandState } from "@/utils/contractHelpers";
 
-const ClaimTreeButton = ({ landId, taskId, xpReward, refetch }) => {
-  const { contracts, signer, userAddress } = useEthereum();
+const ClaimTreeButton = ({
+  landId,
+  taskId,
+  xpReward,
+  refetch,
+  treeSize = 1,
+}) => {
+  const { contracts, signer, provider, userAddress } = useEthereum();
   const [addTask] = useMutation(ADD_TASK);
-  const [hasGrassArea, setHasGrassArea] = useState(false);
+  const [hasTreeArea, setHasTreeArea] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isTaskAdded, setIsTaskAdded] = useState(false);
+  useEffect(() => {
+    if (signer && provider) {
+      setEthereumConnection(signer, provider);
+      if (!isTaskAdded) checkTreeState();
+    }
+  }, [signer, provider, isTaskAdded]);
 
   const handleAddTask = useCallback(async () => {
     if (isTaskAdded) return; // Eğer görev zaten eklendiyse, fonksiyonu erken sonlandır
@@ -31,22 +44,13 @@ const ClaimTreeButton = ({ landId, taskId, xpReward, refetch }) => {
     }
   }, [addTask, userAddress, landId, taskId, xpReward, isTaskAdded, refetch]);
 
-  const checkLandState = useCallback(async () => {
-    if (!contracts?.landGameContract || !signer) {
-      console.log("Contract or signer is not available.");
-      setIsLoading(false);
-      return;
-    }
+  const checkTreeState = useCallback(async () => {
     try {
       setIsLoading(true);
-      const contractWithSigner = contracts.landGameContract.connect(signer);
-      const landState = await contractWithSigner.getLandState();
-      const landStateArray = JSON.parse(JSON.stringify(landState));
-
-      const treeCount = countGrass(landStateArray);
-
-      setHasGrassArea(treeCount > 0);
-      if (treeCount >= 1 && !isTaskAdded) {
+      const landStateArray = await getLandState();
+      const treeCount = countTree(landStateArray);
+      setHasTreeArea(treeCount > 0);
+      if (treeCount >= treeSize && !isTaskAdded) {
         await handleAddTask();
       }
     } catch (error) {
@@ -56,13 +60,7 @@ const ClaimTreeButton = ({ landId, taskId, xpReward, refetch }) => {
     }
   }, [contracts, signer, isTaskAdded, handleAddTask]);
 
-  useEffect(() => {
-    if (contracts?.landGameContract && signer && !isTaskAdded) {
-      checkLandState();
-    }
-  }, [contracts, signer, isTaskAdded]);
-
-  const countGrass = (landStateArray) => {
+  const countTree = (landStateArray) => {
     return landStateArray.reduce((count, row) => {
       return count + row.filter((cell) => cell === "tree").length;
     }, 0);
@@ -72,7 +70,7 @@ const ClaimTreeButton = ({ landId, taskId, xpReward, refetch }) => {
     return <div>Loading...</div>;
   }
 
-  return <div>{hasGrassArea ? "1 tree was staked." : "Stake 1 tree."}</div>;
+  return <div>{hasTreeArea ? "1 tree was staked." : "Stake 1 tree."}</div>;
 };
 
 export default ClaimTreeButton;

@@ -1,9 +1,11 @@
+"use client";
+
 import React, { useEffect, useState } from "react";
-import { useSession, signIn } from "next-auth/react";
 import { ADD_TASK, GET_SPECIFIC_TASK } from "@/graphql/queries/task";
 import { useMutation, useQuery } from "@apollo/client";
+import { useSession, signIn } from "next-auth/react";
 
-const TwitterFollowVerification = ({ landId }) => {
+const TwitterConnectButton = ({ landId, refetch }) => {
   const [addTask] = useMutation(ADD_TASK);
   const { data: session } = useSession();
 
@@ -17,6 +19,8 @@ const TwitterFollowVerification = ({ landId }) => {
           xpReward: 100,
         },
       });
+      refetch();
+
       //   refetchTasks();
       //   refetchTotalXp();
     } catch (error) {
@@ -45,4 +49,4 @@ const TwitterFollowVerification = ({ landId }) => {
   return <div onClick={handleFollowClick}>Follow us on Twitter.</div>;
 };
 
-export default TwitterFollowVerification;
+export default TwitterConnectButton;

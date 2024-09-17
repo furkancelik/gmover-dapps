@@ -11,13 +11,14 @@ export const taskResolvers = {
         "TWITTER_FOLLOW",
         "TELEGRAM_JOIN",
         "CLAIM_GRASS_LAND_1",
-        "CLAIM_TREE_1,",
+        "CLAIM_TREE_1",
       ];
 
       const tasks = await Task.find({
         landId,
         taskId: { $in: taskIds }, // taskId bu dizide varsa seç
       });
+      console.log(tasks);
 
       return tasks.reduce((total, task) => total + task.xpReward, 0);
     },
