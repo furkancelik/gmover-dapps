@@ -1,25 +1,31 @@
 import { useEthereum } from "@/context/EthereumContext";
-import { useEffect, useContext } from "react";
 
+import { useEffect } from "react";
+
+// This hook listens to a contract event and calls a handler when the event is emitted
 const useContractEvent = (eventName, contract, handleEvent) => {
+  const { connectedWallet } = useEthereum();
   useEffect(() => {
-    if (!contract) return; // Eğer contract nesnesi yoksa, hook'u çalıştırma
+    // TODO:nightly de bir hata veriyor bunu daha sonra düzelt!!
+    if (connectedWallet === "nightly") return;
+    // If the contract is not available, exit early
+    if (!contract) return;
 
-    // EventListener fonksiyonu, olay tetiklendiğinde çağrılacak
+    // EventListener function will be triggered when the contract event is emitted
     const eventListener = (...args) => {
-      handleEvent(...args); // handleEvent, tetiklenen olaya yanıt olarak dışarıdan sağlanan işlevdir
+      handleEvent(...args); // Call the event handler with event arguments
     };
 
-    // Belirtilen olay için dinleyici ekleyin
+    // Subscribe to the contract event
     contract.on(eventName, eventListener);
 
-    // Component temizlenirken (yani, unmount olurken), olay dinleyicisini kaldırın
+    // Cleanup the listener when the component unmounts or dependencies change
     return () => {
-      contract.off(eventName, eventListener);
+      if (contract && eventListener) {
+        contract.off(eventName, eventListener);
+      }
     };
-  }, [contract, eventName]); // useEffect'in bağımlılıkları
-
-  // Bu hook, dışa dönük bir değer döndürmüyor; sadece yan etkiler (etkileşimler) için kullanılıyor
+  }, [contract, eventName, handleEvent, connectedWallet]); // Re-run the effect when dependencies change
 };
 
 export default useContractEvent;
